@@ -1,0 +1,105 @@
+// Link: https://dbdiagram.io/d/68e7a84cd2b621e4220e0441
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+//Funcionalities:
+// - We need to be able to quickly move students between groups
+// - Students may be assigned to different faculties and majors
+// - We need to be able to quickly add new students
+// - We need to be able to quickly add marks to each student
+// - We need to calculate things like mark means quickly
+// - Students shouldn't be able to belong to colliding groups
+// - Multiple Workers can be instructors for the same course
+//   Note: Currently there's no tie of majors to instructor. 
+//   (there's connection of instructors to groups) 
+//   I think it would require another many-to-many table
+// - Views something that allows student to see their timetable and their marks
+// - Our main inspiration was our lord and saviour USOS
+// - 
+
+Table faculties {
+  faculty_id serial [primary key]
+  name text [not null, unique]
+  dean_worker_id integer [null, ref: > workers.worker_id] //fk to workers
+}
+
+Table majors {
+  major_id serial [primary key]
+  name text [not null, unique]
+  code varchar(8) [not null, unique]
+  faculty_id integer [not null, ref: > faculties.faculty_id] //fk to faculties 
+}
+
+Table courses {
+  course_id serial [primary key]
+  code varchar(8) [not null, unique]
+  title text [not null]
+  ects_credits numeric(4,2) [default: 1]
+}
+
+Table workers {
+  worker_id serial [primary key]
+  first_name text [not null]
+  last_name text [not null]
+  telephone varchar(9) [null]
+  email text [unique, null]
+  sex varchar(1) [null]
+  faculty_id integer [null, ref: > faculties.faculty_id] //fk to faculties
+  teaching boolean [not null, default: false]
+}
+
+Table students {
+  student_id serial [primary key]
+  first_name text [not null]
+  last_name text [not null]
+  telephone varchar(9) [null]
+  email text [unique, null]
+  address text [null]
+  sex varchar(1) [null]
+}
+
+
+Table student_to_majors { //many-to-many
+  student_id integer [not null] //fk to students
+  major_id integer [not null] //fk to majors
+  declared_at timestamp [null, default: `now()`]
+  // (student_id, major_id) primary key - I think this is not supported 
+}
+ref: student_to_majors.student_id > students.student_id [delete: cascade]  
+ref: student_to_majors.major_id > majors.major_id [delete: cascade] 
+
+Table groups {
+  group_id serial [primary key]
+  course_id integer [not null, ref: > courses.course_id]
+  instructor_worker_id integer [not null, ref: > workers.worker_id] //Check (teaching==True)
+  group_code varchar(6) [not null, unique]
+  day_of_week smallint [not null] // CHECK (day_of_week BETWEEN 1 AND 7) -- 1=Mon, 7=Sun - currently not supported by dbdiagram
+  start_time time [not null]
+  end_time time [not null]
+  start_date date [not null]
+  end_date date [not null]
+  
+  // Additional checks:
+  // CHECK (end_time > start_time)
+  // CHECK (end_date > start_date)
+}
+//Note: non-overlapping group schedules must be enforced. Not sure how.
+
+Table students_to_groups {
+  student_id integer [not null]
+  group_id integer [not null]
+}
+ref: students_to_groups.student_id > students.student_id [delete: cascade]
+ref: students_to_groups.group_id > groups.group_id [delete: cascade]
+
+
+Table marks{
+  mark_id serial [primary key]
+  student_id integer [not null, ref: > students.student_id]
+  course_id integer [not null, ref: > courses.course_id] 
+  // check must be added to see if student belongs to the course before adding marks
+  mark numeric(4,2) [not null] // 
+  weight int [null, default: 1]
+  added date [null, default: `now()`]
+}
+

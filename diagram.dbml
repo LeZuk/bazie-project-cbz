@@ -1,0 +1,140 @@
+// Link: https://dbdiagram.io/d/68e7a84cd2b621e4220e0441
+// Use DBML to define your database structure
+// Docs: https://dbml.dbdiagram.io/docs
+
+// Funcionalities:
+// - We need to be able to quickly move students between groups
+// - Students may be assigned to different faculties and majors
+// - We need to be able to quickly add new students
+// - We need to be able to quickly add marks to each student
+// - We need to calculate things like mark means quickly
+// - Students shouldn't be able to belong to colliding groups, nor should workers;
+// - Multiple Workers can be instructors for the same course but not for the same group;
+//   Note: Currently there's no tie of majors to instructor. 
+//   (there's connection of instructors to groups) 
+//   I think it would require another many-to-many table as one instructor can teach various majors
+//   I'm not sure if we need this link
+// - Views something that allows student to see their timetable and their marks
+// - Our main inspiration was our lord and saviour - USOS
+
+
+
+// -- Tables
+
+Table faculties {
+  faculty_id SERIAL [pk]
+  name varchar(128) [not null, unique]
+  dean_worker_id INTEGER
+}
+
+Table majors {
+  major_id SERIAL [pk]
+  name varchar(128) [not null, unique]
+  code VARCHAR(8) [not null, unique]
+  faculty_id INTEGER [not null]
+}
+
+Table courses {
+  course_id SERIAL [pk]
+  code VARCHAR(16) [not null, unique]
+  title varchar(128) [not null]
+  major_id INTEGER [not null]
+  ects_credits SMALLINT [not null, default: 1]
+}
+
+Table workers {
+  worker_id SERIAL [pk]
+  first_name varchar(128) [not null]
+  last_name varchar(128) [not null]
+  telephone varchar(16) [unique]
+  email varchar(128) [unique]
+  sex varchar(1)
+  faculty_id INTEGER
+  teaching BOOLEAN [not null, default: FALSE]
+}
+
+Table students {
+  student_id SERIAL [pk]
+  first_name varchar(128) [not null]
+  last_name varchar(128) [not null]
+  telephone varchar(16) [unique]
+  email varchar(128) [unique]
+  sex varchar(1)
+}
+
+Table groups {
+  group_id SERIAL [pk]
+  course_id INTEGER [not null]
+  instructor_worker_id INTEGER [not null]
+  code VARCHAR(32) [not null, unique]
+  day_of_week SMALLINT [not null]
+  start_time TIME [not null]
+  end_time TIME [not null]
+  start_date DATE [not null]
+  end_date DATE [not null]
+  
+  // Note: 
+  // - TODO: Add trigger so that if worker is assigned to group teaching is set to true
+  // - TODO: Add trigger to prevent overlapping schedules
+  // - TODO: Add field that allows to mark whether the group meets every week or every second week (even or odd weeks) etc.
+  // - CONSTRAINT working_hours CHECK (start_time >= '08:00' AND end_time <= '20:00')
+}
+
+Table students_to_majors {
+  student_id INTEGER [not null]
+  major_id INTEGER [not null]
+  declared_at TIMESTAMP [default: `NOW()`]
+  year_of_study INTEGER [not null]
+  
+  indexes {
+    (student_id, major_id) [pk]
+  }
+}
+
+Table students_to_groups {
+  student_id INTEGER [not null]
+  group_id INTEGER [not null]
+  
+  indexes {
+    (student_id, group_id) [pk]
+  }
+}
+
+Table marks {
+  mark_id SERIAL [pk]
+  student_id INTEGER [not null]
+  course_id INTEGER [not null]
+  mark SMALLINT [not null, note: 'CHECK (mark >= 2 AND mark <= 5)']
+  weight SMALLINT [default: 1, note: 'CHECK (weight > 0)']
+  added DATE [default: `now()`, note: 'CHECK (added <= now())']
+  
+  // Note
+  // - TODO: Add trigger to check if student belongs to the course
+}
+
+// -- Relationships
+
+Ref: faculties.dean_worker_id - workers.worker_id // one-to-one
+
+Ref: majors.faculty_id > faculties.faculty_id // many-to-one
+
+Ref: courses.major_id > majors.major_id // many-to-one
+
+Ref: workers.faculty_id > faculties.faculty_id [delete: set null] // many-to-one
+
+Ref: groups.course_id > courses.course_id [delete: cascade] // many-to-one
+Ref: groups.instructor_worker_id > workers.worker_id [delete: set null] // many-to-one
+
+Ref: students_to_majors.student_id > students.student_id [delete: cascade] // many-to-one
+Ref: students_to_majors.major_id > majors.major_id [delete: cascade] // many-to-one
+
+Ref: students_to_groups.student_id > students.student_id [delete: cascade] // many-to-one
+Ref: students_to_groups.group_id > groups.group_id [delete: cascade] // many-to-one
+
+Ref: marks.student_id > students.student_id [delete: cascade] // many-to-one
+Ref: marks.course_id > courses.course_id [delete: cascade] // many-to-one
+
+// --- more TODOs 
+// - To ensure a student doesn’t join overlapping groups,
+//   add trigger comparing (day_of_week, start_time, end_time).
+// - To Calculate marks average efficiently, add a materialized view or index.
