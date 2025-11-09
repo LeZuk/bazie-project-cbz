@@ -16,6 +16,8 @@ import random
 # Configuration
 # ============================================================================
 
+random.seed(12345)
+
 FILES = ["input/m_names.csv", "input/f_names.csv", "input/m_lastnames.csv", "input/f_lastnames.csv"]
 MAJORS_PATH = "input/majors.json"
 NUM_OF_WORKERS = 500
@@ -34,6 +36,7 @@ ECTS_DISTRIBUTION = (
 )
 DOUBLE_MAJOR_CHANCE = 0.02
 TRIPLE_MAJOR_CHANCE = 0.005
+EMAIL_DOMAIN = "agh.edu.pl"
 
 # ============================================================================
 # Data Classes for Better Structure
@@ -64,11 +67,11 @@ class UniqueGenerators:
         """Generate unique email address."""
         base = f"{unidecode(first_name.lower())}_{unidecode(last_name.lower())}"
         number = "".join(str(random.randint(0, 9)) for _ in range(3))
-        email = f"{base}{number}@agh.edu.pl"
+        email = f"{base}{number}@{EMAIL_DOMAIN}"
         
         while email in self.emails:
             number = "".join(str(random.randint(0, 9)) for _ in range(3))
-            email = f"{base}{number}@agh.edu.pl"
+            email = f"{base}{number}@{EMAIL_DOMAIN}"
         
         self.emails.add(email)
         return email
