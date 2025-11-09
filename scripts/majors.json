@@ -1,0 +1,529 @@
+{
+  "Matematyka stosowana": {
+    "faculty": "Wydział Matematyki i Fizyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Analiza matematyczna I",
+          "Algebra liniowa",
+          "Wprowadzenie do programowania",
+          "Rachunek różniczkowy i całkowy w zastosowaniach",
+          "Matematyka dyskretna",
+          "Seminarium wprowadzające"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Analiza matematyczna II",
+          "Równania różniczkowe zwyczajne",
+          "Metody numeryczne I",
+          "Statystyka i prawdopodobieństwo",
+          "Modelowanie matematyczne I",
+          "Laboratorium komputerowe"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Analiza zespolona",
+          "Metody numeryczne II",
+          "Optymalizacja i metody optymalizacyjne",
+          "Równania różniczkowe cząstkowe",
+          "Modelowanie matematyczne II",
+          "Metody statystyczne w analizie danych"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Teoria miary i całki",
+          "Metody numeryczne dla problemów nieliniowych",
+          "Stochastyczne procesy matematyczne",
+          "Analiza funkcjonalna",
+          "Zastosowania optymalizacji",
+          "Projekt zespołowy - modelowanie"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Metody obliczeniowe w naukach stosowanych",
+          "Metody statystyczne i estymacja",
+          "Symulacje komputerowe",
+          "Analiza numeryczna równań różniczkowych cząstkowych",
+          "Wybrane zagadnienia z matematyki stosowanej",
+          "Praktyka zawodowa"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Matematyka obliczeniowa w projektach inżynierskich",
+          "Metody optymalizacji zaawansowanej",
+          "Analiza danych i wizualizacja",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+
+  "Inżynieria materiałowa": {
+    "faculty": "Wydział Matematyki i Fizyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do inżynierii materiałowej",
+          "Chemia ogólna",
+          "Fizyka materiałów I",
+          "Matematyka dla inżynierów",
+          "Rysunek techniczny i CAD"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Struktura materiałów i krystalografia",
+          "Właściwości mechaniczne materiałów",
+          "Metody badań materiałów I",
+          "Termodynamika materiałów",
+          "Materiały polimerowe"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Materiały metaliczne i stopy",
+          "Procesy obróbki i wytwarzania materiałów",
+          "Metody badań materiałów II",
+          "Wytrzymałość materiałów",
+          "Laboratorium materiałoznawcze"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Materiały ceramiczne i kompozytowe",
+          "Korozja i ochrona materiałów",
+          "Charakteryzacja mikrostruktury",
+          "Projektowanie materiałowe",
+          "Technologie wytwarzania cienkich warstw"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Zaawansowane metody badawcze",
+          "Modelowanie własności materiałowych",
+          "Badania nieniszczące",
+          "Zastosowania materiałów w przemyśle",
+          "Praktyka przemysłowa"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Materiały funkcjonalne",
+          "Projekt inżynierski",
+          "Zarządzanie jakością i normy materiałowe",
+          "Przedmiot do wyboru"
+        ]
+      },
+      {
+        "semester": 7,
+        "courses": [
+          "Projekt dyplomowy",
+          "Zaawansowane techniki charakteryzacji",
+          "Praktyka przemysłowa"
+        ]
+      }
+    ]
+  },
+  "Fizyka teoretyczna": {
+    "faculty": "Wydział Matematyki i Fizyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Mechanika klasyczna I",
+          "Matematyka dla fizyków I",
+          "Fizyka matematyczna",
+          "Wstęp do teorii pola",
+          "Seminarium wprowadzające"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Mechanika klasyczna II",
+          "Analiza zespolona i transformacje",
+          "Wprowadzenie do mechaniki kwantowej",
+          "Metody matematyczne w fizyce",
+          "Laboratorium obliczeniowe"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Mechanika kwantowa I",
+          "Teoria pola klasyczna",
+          "Równania różniczkowe cząstkowe w fizyce",
+          "Grupy i symetrie w fizyce",
+          "Metody perturbacyjne i aproksymacje"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Mechanika kwantowa II",
+          "Teoria pola kwantowego",
+          "Statystyczna teoria pola",
+          "Matematyczne aspekty teorii względności",
+          "Seminarium problemowe"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Zaawansowana teoria pola",
+          "Teoria strun",
+          "Metody numeryczne w fizyce teoretycznej",
+          "Fizyka matematyczna zaawansowana",
+          "Projekt badawczy"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Wybrane tematy w fizyce teoretycznej",
+          "Praca licencjacka",
+          "Seminarium dyplomowe"
+        ]
+      }
+    ]
+  },
+  "Informatyka": {
+    "faculty": "Wydział Informatyki i Telekomunikacji",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Podstawy programowania I",
+          "Matematyka dyskretna",
+          "Algebra liniowa",
+          "Wprowadzenie do systemów komputerowych",
+          "Podstawy logiki i teorii obliczeń"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Struktury danych i algorytmy",
+          "Programowanie obiektowe",
+          "Systemy operacyjne",
+          "Bazy danych",
+          "Matematyka w informatyce"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Algorytmy zaawansowane",
+          "Inżynieria oprogramowania",
+          "Sieci komputerowe",
+          "Programowanie współbieżne",
+          "Laboratorium programistyczne"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Zaawansowane bazy danych i systemy rozproszone",
+          "Bezpieczeństwo systemów informatycznych",
+          "Sztuczna inteligencja i uczenie maszynowe",
+          "Projekt zespołowy"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Architektura systemów i chmura obliczeniowa",
+          "Analiza i projektowanie systemów rozproszonych",
+          "Inżynieria danych",
+          "Testowanie i zapewnienie jakości oprogramowania",
+          "Praktyka zawodowa"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Optymalizacja oprogramowania i analiza wydajności",
+          "Projekt dyplomowy",
+          "Zarządzanie projektami IT"
+        ]
+      }
+    ]
+  },
+  "Sieci komputerowe i telekomunikacja": {
+    "faculty": "Wydział Informatyki i Telekomunikacji",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Podstawy telekomunikacji",
+          "Architektura komputerów",
+          "Matematyka dyskretna i algebra",
+          "Podstawy programowania",
+          "Fale i sygnały"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Teoria sygnałów i systemów",
+          "Sieci komputerowe I",
+          "Elektronika cyfrowa",
+          "Podstawy transmisji radiowej",
+          "Laboratorium sieciowe"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Protokoły i usługi sieciowe",
+          "Sieci bezprzewodowe i mobilne",
+          "Podstawy kodowania i modulacji",
+          "Sieciowy sprzęt i urządzenia aktywne",
+          "Bezpieczeństwo sieci"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Sieci rozległe i sieci operatorskie",
+          "Telekomunikacja światłowodowa",
+          "QoS i zarządzanie ruchem w sieciach",
+          "Wirtualizacja sieci i SDN",
+          "Sieci MPLS"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Systemy mobilne i 5G",
+          "Bezpieczeństwo i odporność sieci",
+          "Administracja i monitorowanie sieci",
+          "Praktyka zawodowa",
+          "Narzędzia teleinformatyczne"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Planowanie i projektowanie sieci telekomunikacyjnych",
+          "Projekt dyplomowy",
+          "Regulacje i standardy telekomunikacyjne"
+        ]
+      }
+    ]
+  },
+
+  "Kulturoznawstwo": {
+    "faculty": "Wydział Humanistyczny",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do kulturoznawstwa",
+          "Historia kultury i cywilizacji",
+          "Podstawy teorii kultury",
+          "Metody badań humanistycznych",
+          "Seminarium wprowadzające"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Teorie kultury współczesnej",
+          "Kultura masowa i media",
+          "Antropologia kulturowa",
+          "Badania jakościowe w kulturoznawstwie",
+          "Kultura wizualna"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Kultury popularne",
+          "Pamięć kulturowa i tożsamość",
+          "Kulturoznawcze studia regionalne",
+          "Analiza dyskursu i semiotyka",
+          "Warsztat badawczy"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Kultura cyfrowa i media społecznościowe",
+          "Kultura a polityka",
+          "Etnografia kulturowa",
+          "Metody ilościowe w badaniach kultury",
+          "Projekt badawczy"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Kultura i globalizacja",
+          "Kultura materialna i muzeologia",
+          "Krytyka kultury i teoria krytyczna",
+          "Praktyka w instytucjach kultury"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Seminarium dyplomowe",
+          "Podstawy filmoznastwa",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Psychologia": {
+    "faculty": "Wydział Humanistyczny",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do psychologii",
+          "Podstawy biologii",
+          "Metodologia badań psychologicznych I",
+          "Psychologia rozwojowa",
+          "Statystyka podstawowa dla psychologów"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Psychologia poznawcza",
+          "Psychologia osobowości",
+          "Metodologia badań psychologicznych II",
+          "Psychologia społeczna",
+          "Psychologia behawioralna"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Psychologia kliniczna",
+          "Psychometria i testy psychologiczne",
+          "Neuropsychologia",
+          "Psychologia rozwoju człowieka",
+          "Laboratorium statystyczne"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Interwencje psychologiczne i terapia",
+          "Psychologia zdrowia",
+          "Badania jakościowe w psychologii",
+          "Etyka w praktyce psychologa",
+          "Praktyka warsztatowa"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Psychologia pracy i organizacji",
+          "Diagnostyka psychologiczna",
+          "Psychologia społeczna zaawansowana",
+          "Praktyka w placówkach zdrowia psychicznego",
+          "Wybrane zagadnienia filozofii"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Seminarium z metodologii badań",
+          "Psychologia religii",
+          "Praktyka kliniczna"
+        ]
+      },
+      {
+        "semester": 7,
+        "courses": [
+          "Praca licencjacka",
+          "Seminarium dyplomowe",
+          "Praktyka kliniczna zaawansowana"
+        ]
+      }
+    ]
+  },
+  "Filozofia": {
+    "faculty": "Wydział Humanistyczny",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do filozofii",
+          "Historia filozofii starożytnej i średniowiecznej",
+          "Logika i krytyczne myślenie",
+          "Podstawy etyki",
+          "Seminarium wprowadzające"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Historia filozofii nowożytnej",
+          "Epistemologia",
+          "Metodologia filozofii i argumentacja",
+          "Filozofia nauki",
+          "Warsztat interpretacyjny"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Filozofia polityczna i teoria społeczna",
+          "Metafizyka",
+          "Etyka normatywna i praktyczna",
+          "Filozofia języka",
+          "Seminarium tematyczne"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Filozofia umysłu i kognitywistyka",
+          "Estetyka i filozofia sztuki",
+          "Filozofia moralna zaawansowana",
+          "Historia filozofii XX wieku",
+          "Praca nad tekstem filozoficznym"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Filozofia polityki współczesnej",
+          "Filozofia religii",
+          "Filozofia etyki stosowanej",
+          "Praktyka dydaktyczna"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Praca licencjacka",
+          "Seminarium dyplomowe",
+          "Filozofia w XXI wieku"
+        ]
+      }
+    ]
+  }
+}
+

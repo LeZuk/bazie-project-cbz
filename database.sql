@@ -5,7 +5,7 @@ BEGIN;
 -- I don't want to install the extensions so I'll just store is as pure lowercase
 -- trigger will be added later to automatically convert it to lowercase
 CREATE DOMAIN email_t AS varchar(128)
-    CHECK ( value ~ '^[a-z0-9.!#$%&''*+/=?^_`{|}~-]+@[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?(?:\.[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?)*$' );
+    CHECK ( value ~ '^[[:lower:]0-9.!#$%&''*+/=?^_`{|}~-]+@[[:lower:]0-9](?:[[:lower:]0-9-]{0,61}[[:lower:]0-9])?(?:\.[[:lower:]0-9](?:[[:lower:]0-9-]{0,61}[[:lower:]0-9])?)*$' );
 
 CREATE DOMAIN telephone_t as varchar(16)
     CHECK ( value  ~ '^\+?\d{10,14}$' );
@@ -19,37 +19,38 @@ CREATE DOMAIN sex_t as varchar(1)
 -- common type used for things likes names and surnames
 CREATE DOMAIN name_t as varchar(128)
     CHECK ( value ~ '^[[:alpha:]''-]+$');
--- NOTE: I have tested using [:alpha:] and suprisingly it worked for characters from various languages;
+-- NOTE: I have tested using [:alpha:]   and suprisingly it worked for characters from various languages;
 -- including cyrillic, hebrew, arabic, kanji etc. yes numbers of some math symbols or emoji didn't
 -- I'm not sure how much it depends on stuff like locale/fonts/OS
+-- [:lower:] follows the same logic
 
--- as above but also allows whitespaces
-CREATE DOMAIN ws_name_t as varchar(128)
-    CHECK ( value ~ '^[[:alpha:]\s''-]+$');
+-- as above but also allows for more other characters including whitespaces and numbers
+CREATE DOMAIN ext_name_t as varchar(128)
+    CHECK ( value ~ '^[[:alpha:]\s:0-9''-]+$');
 
 
 
 -- Structure:
 CREATE TABLE faculties (
     faculty_id SERIAL PRIMARY KEY,
-    name ws_name_t NOT NULL UNIQUE,
+    name ext_name_t NOT NULL UNIQUE,
     dean_worker_id INTEGER NULL
 );
 
 CREATE TABLE majors (
     major_id SERIAL PRIMARY KEY,
-    name ws_name_t NOT NULL UNIQUE,
+    name ext_name_t NOT NULL UNIQUE,
     code VARCHAR(8) NOT NULL UNIQUE
-        CHECK (code ~ '^[A-Z]{3}-[0-9]{3}$'),
+        CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}$'),
     faculty_id INTEGER NOT NULL REFERENCES faculties(faculty_id) ON DELETE RESTRICT
 );
 
 CREATE TABLE courses (
     course_id SERIAL PRIMARY KEY,
     code VARCHAR(16) NOT NULL UNIQUE
-        CHECK (code ~ '^[A-Z]{3}-[0-9]{3}-[A-Z]{3}-[0-9]{3}$'),
+        CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}$'),
         -- I assume that it will be extended major code
-    title ws_name_t NOT NULL,
+    title ext_name_t NOT NULL,
     major_id INTEGER NOT NULL REFERENCES majors(major_id) ON delete CASCADE,
     ects_credits SMALLINT NOT NULL DEFAULT 1 
 );
@@ -81,7 +82,7 @@ CREATE TABLE groups (
     instructor_worker_id INTEGER NOT NULL REFERENCES workers(worker_id) ON DELETE SET NULL,
     -- TODO: Add trigger so that if worker is assigned to group teaching is set to true
     code VARCHAR(32) NOT NULL UNIQUE
-        CHECK (code ~ '^[A-Z]{3}-[0-9]{3}-[A-Z]{3}-[0-9]{3}-[0-9]{3}$'),
+        CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}$'),
         -- I assume that it will be extended course code
     day_of_week SMALLINT NOT NULL CHECK (day_of_week BETWEEN 1 AND 7), -- 1=MON, 7=SUN
     start_time TIME NOT NULL,
@@ -99,8 +100,7 @@ CREATE TABLE groups (
 CREATE TABLE students_to_majors(
     student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
     major_id INTEGER NOT NULL REFERENCES majors(major_id) ON DELETE CASCADE,
-    declared_at TIMESTAMP NULL DEFAULT NOW() CHECK (declared_at <= now()),
-    year_of_study INTEGER NOT NULL CHECK (year_of_study >= 1),
+    semester INTEGER NOT NULL CHECK (semester >= 1),
     PRIMARY KEY (student_id, major_id)
 );
 
