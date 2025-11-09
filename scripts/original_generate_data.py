@@ -1,17 +1,18 @@
+# this is how the script was created by me
+# It's messy but it works I didn't care much at the time of writing
+
 from datetime import datetime, date, time, timedelta
 from unidecode import unidecode
 from itertools import combinations, product
 import json
 import math
-import copy
 import random
-import pprint
 
 
 NUM_OF_WORKERS = 200
 
-OUTPUT_FILE = "generated_data.sql"
-FACULTIES = {"Wydział Matematyki i Fizyki": 0, "Wydział Informatyki i Telekomunikacji": 0, "Wydział Humanistyczny": 0}
+OUTPUT_FILE = "og_data.sql"
+FACULTIES = {}
 SEX = [("M", 0.49), ("F", 0.49), ("O", 0.02)]
 
 USED_TELEPHONES = set([""])
@@ -30,15 +31,15 @@ def read_data_from_files():
     global F_LASTNAMES 
     F_LASTNAMES = []
 
-    for file_name in ["m_names.csv", "f_names.csv", "m_lastnames.csv", "f_lastnames.csv"]:
+    for file_name in ["input/m_names.csv", "input/f_names.csv", "input/m_lastnames.csv", "input/f_lastnames.csv"]:
         with open (file_name) as file:
             for line in file:
                 line = line.strip().split(',')
                 line[1] = float(line[1])
-                globals()[file_name.split('.')[0].upper()].append(tuple(line))
+                globals()[file_name.split('.')[0].split('/')[-1].upper()].append(tuple(line))
 
     global MAJORS 
-    with open("majors.json") as file:
+    with open("input/majors.json") as file:
         MAJORS = json.load(file)
 
 
@@ -65,14 +66,19 @@ def generate_email(name, surname):
 
 def create_faculties():
     faculties = []
-    for idx, faculty in enumerate(FACULTIES.keys()):
+    idx = 1
+    for major_info in MAJORS.values():    
         fac = {}
-        fac["faculty_id"] = idx + 1
-        fac["name"] = faculty
         fac["dean_worker_id"] = random.randint(1,NUM_OF_WORKERS)
+        fac["faculty_id"] = idx
+        fac["name"] = major_info["faculty"]
 
-        FACULTIES[faculty] = idx + 1
-        faculties.append(fac)
+        if fac["name"] not in FACULTIES:
+            FACULTIES[fac["name"]] = idx
+            faculties.append(fac)
+            idx += 1 
+    print(FACULTIES)
+    print(faculties)
     return faculties
 
 
@@ -535,8 +541,8 @@ def update_teaching(workers):
             worker["teaching"] = True
     return workers
 
-def write_to_output_file(data, name,file):
-    def esc(value):
+def write_to_output_file(data, name, file, id):
+    def escape(value):
         if value is None:
             return '\\N'
         if isinstance(value, bool):
@@ -548,6 +554,7 @@ def write_to_output_file(data, name,file):
         return str(value)
 
 
+    count = 0
     keys = data[0].keys()
     first_line = (f'COPY {name} ({', '.join(keys)}) FROM stdin;\n')
     print(first_line)
@@ -555,10 +562,15 @@ def write_to_output_file(data, name,file):
     for val in data:
         line = []
         for key in keys:
-            line.append(esc(val[key]))
+            line.append(escape(val[key]))
         print(line)
         file.write('\t'.join(line) + '\n')
-    file.write('\\.\n\n')
+        count += 1
+    file.write('\\.\n')
+    if id:
+        file.write(f'SELECT setval(\'{name}_{id}_seq\',{str(count)} ,true);')
+    file.write('\n\n')
+
 
 def main():
     read_data_from_files()
@@ -578,15 +590,15 @@ def main():
     with open(OUTPUT_FILE, 'a', encoding='utf-8') as f:
         f.truncate(0)
         f.write("BEGIN;\n\n")
-        write_to_output_file(fac, "faculties", f)
-        write_to_output_file(maj, "majors", f)
-        write_to_output_file(cur, "courses", f)
-        write_to_output_file(wor, "workers", f)
-        write_to_output_file(stu, "students", f)
-        write_to_output_file(gro, "groups", f)
-        write_to_output_file(stm, "students_to_majors", f)
-        write_to_output_file(stg, "students_to_groups", f)
-        write_to_output_file(mar, "marks", f)
+        write_to_output_file(fac, "faculties", f, 'faculty_id')
+        write_to_output_file(maj, "majors", f, 'major_id')
+        write_to_output_file(cur, "courses", f, 'course_id')
+        write_to_output_file(wor, "workers", f, 'worker_id')
+        write_to_output_file(stu, "students", f, 'student_id')
+        write_to_output_file(gro, "groups", f, 'group_id')
+        write_to_output_file(stm, "students_to_majors", f, None)
+        write_to_output_file(stg, "students_to_groups", f, None)
+        write_to_output_file(mar, "marks", f, 'mark_id')
 
         f.write("\nCOMMIT;\n")
 

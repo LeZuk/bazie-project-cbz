@@ -1,651 +1,771 @@
+# this the code after it was run through an AI agent
+# frankly it's better I mean the logic is correct (I checked)
+# but code is structured better and and contains more comments
+# also checks were added to prevent infinite loops (something I was to lazy to do)
 
-from __future__ import annotations
+from unidecode import unidecode
+from itertools import combinations
+from datetime import datetime, timedelta, time, date
+from dataclasses import dataclass, field
+from typing import Dict, List, Set, Tuple, Optional
+import json
+import math
 import random
-import string
-import datetime
-import itertools
-import sys
-from typing import List, Dict, Tuple, Optional, Set
 
-# -------------------------------
-# Configuration (tweak as needed)
-# -------------------------------
-NUM_STUDENTS = 1000
-NUM_WORKERS = 150
-NUM_TEACHING = 100
-NUM_FACULTIES = 3  # 3-4 as requested
-MAJORS_PER_FACULTY = (2, 3)  # inclusive range
-MAJOR_COURSES_APPROX = 60
-SHARED_COURSE_REUSE_PROB = 0.15  # probability that a course is reused across majors
-GROUPS_PER_COURSE_RANGE = (2, 4)
-STUDENT_MAJORS_RANGE = (1, 2)
-STUDENT_GROUPS_RANGE = (5, 12)  # each student attends 3-6 groups on average
-MARKS_PER_STUDENT = (5, 15)  # how many marks will be generated per student
+# ============================================================================
+# Configuration
+# ============================================================================
 
-OUTPUT_SQL = 'output.sql'
+FILES = ["input/m_names.csv", "input/f_names.csv", "input/m_lastnames.csv", "input/f_lastnames.csv"]
+MAJORS_PATH = "input/majors.json"
+NUM_OF_WORKERS = 500
+OUTPUT_FILE = "data.sql"
+STUDENTS_PER_GROUP = 15
+SEX = [("M", 0.49), ("F", 0.49), ("O", 0.02)]
 
-random.seed(42)
+NULL_TELEPHONE_CHANCE = 0.10
+NULL_SEX_CHANCE = 0.01
 
-# -------------------------------
-# Minimal name pools (no external libs)
-# -------------------------------
-FIRST_NAMES = [
-    'Anna','Maria','Katarzyna','Agnieszka','Magdalena','Monika','Joanna','Natalia','Ewa','Karolina',
-    'Beata','Dorota','Barbara','Paulina','Aleksandra','Sylwia','Iwona','Patrycja','Justyna','Elżbieta',
-    'Zofia','Julia','Oliwia','Emilia','Weronika','Wiktoria','Martyna','Dominika','Klaudia','Helena',
-    'Gabriela','Izabela','Teresa','Renata','Aneta','Milena','Kamila','Urszula','Alicja','Joanna',
-    'Agata','Danuta','Marta','Karina','Lidia','Halina','Ewelina','Sabina','Bożena','Blanka',
-    'Piotr','Krzysztof','Andrzej','Jan','Marek','Tomasz','Paweł','Łukasz','Grzegorz','Michał',
-    'Rafał','Jakub','Adam','Damian','Dariusz','Mateusz','Szymon','Adrian','Bartosz','Artur',
-    'Maciej','Wojciech','Patryk','Sebastian','Daniel','Kamil','Robert','Dominik','Hubert','Filip',
-    'Aleksander','Marcin','Jacek','Roman','Jerzy','Cezary','Konrad','Przemysław','Norbert','Henryk',
-    'Edward','Waldemar','Tadeusz','Zbigniew','Leszek','Mirosław','Kazimierz','Franciszek','Julian','Oskar',
-    'Emil','Stefan','Lech','Ignacy','Witold','Eugeniusz','Czesław','Borys','Maksymilian','Mariusz',
-    'Alan','Antoni','Nikodem','Bruno','Hubert','Franciszek','Leon','Natan','Mikołaj','Kacper',
-    'Karol','Ryszard','Jeremi','Tymoteusz','Tobiasz','Maurycy','Miłosz','Eryk','Błażej','Oliwier'
-]
+STUDENT_DECAY = [1.0, 0.90, 0.85, 0.80, 0.77, 0.73, 0.70]
+MAJOR_SIZES = ([45, 60, 80, 100, 150, 200], [0.15, 0.25, 0.25, 0.25, 0.03, 0.02])
+ECTS_DISTRIBUTION = (
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+    [0.02, 0.03, 0.1, 0.2, 0.25, 0.25, 0.05, 0.05, 0.03, 0.02]
+)
+DOUBLE_MAJOR_CHANCE = 0.02
+TRIPLE_MAJOR_CHANCE = 0.005
 
-LAST_NAMES = [
-    'Nowak','Kowalski','Wiśniewski','Wójcik','Kowalczyk','Kamiński','Lewandowski','Zieliński','Szymański','Woźniak',
-    'Kozłowski','Jankowski','Mazur','Wojciechowski','Kubiak','Krawczyk','Kaczmarek','Piotrowski','Grabowski','Nowicki',
-    'Pawlak','Michalski','Adamczyk','Dudek','Zając','Wieczorek','Majewski','Olszewski','Stępień','Malinowski',
-    'Jaworski','Pietrzak','Głowacki','Sikora','Wróbel','Baran','Lis','Urbaniak','Czarnecki','Wilk',
-    'Sobczak','Duda','Król','Cieślak','Mróz','Szulc','Kowalewski','Marciniak','Zając','Urban',
-    'Borkowski','Sadowski','Tomczak','Sokołowski','Chmielewski','Walczak','Makowski','Krajewski','Brzeziński','Nowacki',
-    'Bąk','Michalak','Lipiński','Sawicki','Czerwiński','Kaźmierczak','Szewczyk','Kołodziej','Górski','Mazowiecki',
-    'Witkowski','Szczepański','Błaszczyk','Czajkowski','Musiał','Ostrowski','Janik','Domański','Borowski','Konieczny',
-    'Kaleta','Kucharski','Michniewicz','Sobolewski','Dąbrowski','Rogowski','Polak','Bednarek','Łuczak','Głowczyński',
-    'Tomaszewski','Wrona','Leszczyński','Słowiński','Banach','Marcinkowski','Rutkowski','Chojnacki','Olejniczak','Kubicki',
-    'Trzciński','Milewski','Jasiński','Kędzierski','Biernacki','Ciechanowski','Kozieł','Grzybowski','Kurek','Roszkowski',
-    'Turek','Wasilewski','Romanowski','Kasperski','Cybulski','Kubiński','Nowiński','Osiński','Kmieć','Majchrzak'
-]
-
-
-FACULTY_NAMES = [
-    'Faculty of Mathematics and Computer Science',
-    'Faculty of Physics and Astronomy',
-    'Faculty of Economics and Management',
-    'Faculty of Arts and Humanities'
-]
-MAJOR_BASE_NAMES = [
-    'Computer Science','Applied Mathematics','Theoretical Physics','Astrophysics',
-    'Economics','Finance','Management','Philosophy','History','Linguistics'
-]
-
-COURSE_BASES = [
-    # Math & CS
-    'Linear Algebra','Calculus I','Calculus II','Discrete Mathematics','Algorithms','Data Structures',
-    'Operating Systems','Databases','Probability Theory','Statistics','Topology','Differential Equations',
-    'Complex Analysis','Numerical Methods','Graph Theory','Machine Learning','Artificial Intelligence',
-    'Computer Graphics','Information Security','Software Engineering','Networks','Compilers',
-    'Programming in Python','Programming in C++','Web Technologies','Functional Programming','Game Development',
-    'Cloud Computing','Big Data Analytics','Data Mining','Deep Learning','Human-Computer Interaction',
-    'Mobile Application Development','Database Design','Computer Vision','Embedded Systems','Cryptography',
-    'Quantum Computing','Numerical Linear Algebra','Advanced Algorithms','Data Visualization',
+# ============================================================================
+# Data Classes for Better Structure
+# ============================================================================
+@dataclass
+class UniqueGenerators:
+    """Manages unique value generation with efficient lookups."""
+    telephones: Set[str] = field(default_factory=lambda: {""})
+    emails: Set[str] = field(default_factory=lambda: {""})
+    codes: Set[str] = field(default_factory=lambda: {""})
     
-    # Physics & Natural Sciences
-    'Quantum Mechanics','Classical Mechanics','Thermodynamics','Electrodynamics','Astrophysics','Optics',
-    'Nuclear Physics','Statistical Mechanics','Solid State Physics','Particle Physics','Experimental Physics',
-    'Theoretical Physics','Fluid Dynamics','Geophysics','Mathematical Physics','Computational Physics',
-    'Spectroscopy','Nanotechnology','Plasma Physics','Astronomical Observations','Environmental Physics',
+    def generate_phone(self) -> Optional[str]:
+        """Generate unique Polish phone number or None (10% chance)."""
+        if random.random() < NULL_TELEPHONE_CHANCE:
+            return None
+        
+        number = "".join(str(random.randint(0, 9)) for _ in range(9))
+        phone = f"+48{number}"
+        
+        while phone in self.telephones:
+            number = "".join(str(random.randint(0, 9)) for _ in range(9))
+            phone = f"+48{number}"
+        
+        self.telephones.add(phone)
+        return phone
     
-    # Economics & Business
-    'Microeconomics','Macroeconomics','Econometrics','Financial Accounting','Corporate Finance','International Economics',
-    'Marketing','Human Resources Management','Strategic Management','Entrepreneurship','Business Ethics',
-    'Project Management','Banking and Insurance','Behavioral Economics','Public Finance','Economic History',
-    'Investment Analysis','Operations Research','E-Business','Risk Management','Game Theory','Taxation Systems',
-    'Managerial Economics','International Business','Sustainable Economics','Innovation Management',
+    def generate_email(self, first_name: str, last_name: str) -> str:
+        """Generate unique email address."""
+        base = f"{unidecode(first_name.lower())}_{unidecode(last_name.lower())}"
+        number = "".join(str(random.randint(0, 9)) for _ in range(3))
+        email = f"{base}{number}@agh.edu.pl"
+        
+        while email in self.emails:
+            number = "".join(str(random.randint(0, 9)) for _ in range(3))
+            email = f"{base}{number}@agh.edu.pl"
+        
+        self.emails.add(email)
+        return email
     
-    # Humanities & Social Sciences
-    'Philosophy of Science','Ethics','Logic','Epistemology','Metaphysics','Sociology','Cultural Anthropology',
-    'Political Philosophy','Psychology','Cognitive Science','History of Modern Europe','Ancient Civilizations',
-    'Linguistics','Sociolinguistics','Syntax and Semantics','Language Acquisition','Cultural Studies',
-    'Modern Art History','Film Studies','Aesthetics','Social Psychology','Educational Theory',
-    'Gender Studies','Religion and Society','Media Studies','Communication Theory',
+    def generate_code(self, prefix: str, suffix: str = "") -> str:
+        """Generate unique code with given prefix and optional suffix."""
+        code = f"{prefix}{suffix}{''.join(str(random.randint(0, 9)) for _ in range(3))}"
+        
+        while code in self.codes:
+            code = f"{prefix}{suffix}{''.join(str(random.randint(0, 9)) for _ in range(3))}"
+        
+        self.codes.add(code)
+        return code
+
+
+@dataclass
+class ScheduleSlot:
+    """Represents a scheduled time slot for validation."""
+    day_of_week: int
+    start_time: str
+    end_time: str
+    major: int
+    semester: int
+    cohort: int
+    is_lecture: bool
     
-    # Engineering & Applied Sciences
-    'Mechanics of Materials','Thermal Engineering','Electrical Circuits','Control Systems','Robotics',
-    'Digital Electronics','Microprocessors','Signal Processing','Hydraulics and Pneumatics',
-    'Structural Mechanics','Civil Engineering Materials','Transportation Systems','Environmental Engineering',
-    'Building Physics','Mechanical Design','Industrial Automation','Renewable Energy Systems',
+    def overlaps_with(self, other: 'ScheduleSlot') -> bool:
+        """Check if this slot overlaps with another (FIXED LOGIC)."""
+        if self.day_of_week != other.day_of_week:
+            return False
+        
+        if self.major != other.major or self.semester != other.semester:
+            return False
+        
+        # Different cohorts don't conflict unless one is a lecture
+        if not (self.is_lecture or other.is_lecture or self.cohort == other.cohort):
+            return False
+        
+        # Check time overlap
+        return (
+            (self.start_time < other.end_time and self.start_time >= other.start_time) or
+            (other.start_time < self.end_time and other.start_time >= self.start_time)
+        )
     
-    # Chemistry & Biology
-    'Organic Chemistry','Inorganic Chemistry','Analytical Chemistry','Physical Chemistry','Biochemistry',
-    'Molecular Biology','Genetics','Cell Biology','Microbiology','Ecology','Environmental Protection',
-    'Bioinformatics','Toxicology','Pharmacology','Plant Physiology','Zoology','Evolutionary Biology',
-    'Neuroscience','Marine Biology','Environmental Toxicology','Biostatistics','Food Chemistry',
+    def __hash__(self):
+        return hash((self.day_of_week, self.major, self.semester))
+
+
+# ============================================================================
+# Data Loading
+# ============================================================================
+class DataLoader:
+    """Handles loading of names and majors data."""
     
-    # Arts & Education
-    'Art History','Music Theory','Theatre Studies','Creative Writing','Design Fundamentals','Painting Techniques',
-    'Sculpture','Photography','Film Production','Graphic Design','Visual Communication','Typography',
-    'Pedagogy','Curriculum Development','Educational Psychology','Inclusive Education','Musicology',
-    'History of Architecture','Performing Arts','Digital Media','Museology'
-]
+    @staticmethod
+    def load_weighted_data(filepath: str) -> List[Tuple[str, float]]:
+        """Load CSV with name,weight format."""
+        data = []
+        with open(filepath, encoding="utf-8") as fh:
+            for line in fh:
+                parts = line.strip().split(",")
+                data.append((parts[0], float(parts[1])))
+        return data
+    
+    @staticmethod
+    def load_names() -> Dict[str, List[Tuple[str, float]]]:
+        """Load all name files."""
+        return {
+            'M_NAMES': DataLoader.load_weighted_data(FILES[0]),
+            'F_NAMES': DataLoader.load_weighted_data(FILES[1]),
+            'M_LASTNAMES': DataLoader.load_weighted_data(FILES[2]),
+            'F_LASTNAMES': DataLoader.load_weighted_data(FILES[3]),
+        }
+    
+    @staticmethod
+    def load_majors(filepath: str) -> Dict:
+        """Load majors JSON."""
+        with open(filepath, encoding="utf-8") as fh:
+            return json.load(fh)
 
 
-# -------------------------------
-# Helper utils
-# -------------------------------
-
-def gen_code(prefix: str, length: int = 6) -> str:
-    """Generate an uppercase alphanumeric code with given prefix."""
-    body = ''.join(random.choices(string.ascii_uppercase + string.digits, k=max(1, length - len(prefix))))
-    return (prefix + body)[:length]
-
-
-def unique_code_generator(existing: Set[str], prefix: str, length: int = 8):
-    while True:
-        c = gen_code(prefix, length)
-        if c not in existing:
-            existing.add(c)
-            return c
-
-
-def time_to_minutes(t: datetime.time) -> int:
-    return t.hour * 60 + t.minute
-
-
-def minutes_to_time(m: int) -> datetime.time:
-    h = m // 60
-    mm = m % 60
-    return datetime.time(hour=h, minute=mm)
-
-
-def date_range_overlap(a1: datetime.date, a2: datetime.date, b1: datetime.date, b2: datetime.date) -> bool:
-    return not (a2 < b1 or b2 < a1)
-
-
-def time_overlap(s1: datetime.time, e1: datetime.time, s2: datetime.time, e2: datetime.time) -> bool:
-    return not (e1 <= s2 or e2 <= s1)
-
-# -------------------------------
-# Data containers
-# -------------------------------
-
-faculties: List[Dict] = []
-majors: List[Dict] = []
-courses: List[Dict] = []
-workers: List[Dict] = []
-students: List[Dict] = []
-groups: List[Dict] = []
-students_to_majors: List[Tuple[int,int,Optional[str]]] = []  # student_id, major_id, declared_at
-students_to_groups: List[Tuple[int,int]] = []
-marks: List[Dict] = []
-
-# For uniqueness checks
-course_codes: Set[str] = set()
-group_codes: Set[str] = set()
-email_set: Set[str] = set()
-telephone_set: Set[str] = set()
-
-# -------------------------------
-# 1) Faculties
-# -------------------------------
-
-def create_faculties(n_fac: int) -> None:
-    chosen = FACULTY_NAMES[:n_fac]
-    for i, name in enumerate(chosen, start=1):
-        faculties.append({'faculty_id': i, 'name': name, 'dean_worker_id': None})
-
-# -------------------------------
-# 2) Majors
-# -------------------------------
-
-def create_majors():
-    major_id = 1
-    chosen = set();
-    for fac in faculties:
-        cnt = random.randint(MAJORS_PER_FACULTY[0], MAJORS_PER_FACULTY[1])
-        base_choices = list(set(random.sample(MAJOR_BASE_NAMES, k=cnt)))
-        for name in base_choices:
-            print(name, chosen)
-            if name in chosen:
-                continue
-            chosen.add(name)
-            code = f"MJ{major_id:03d}"
-            majors.append({'major_id': major_id, 'name': f"{name}", 'code': code, 'faculty_id': fac['faculty_id']})
-            major_id += 1
-
-# -------------------------------
-# 3) Courses (subjects) - shared across majors sometimes
-# -------------------------------
-
-def create_courses():
-    # Aim: for each major, create ~MAJOR_COURSES_APPROX courses but allow reuse
-    course_id = 1
-    # We'll have a pool to allow sharing
-    global_pool: List[int] = []  # holds indices into courses list
-    for m in majors:
-        needed = MAJOR_COURSES_APPROX
-        for _ in range(needed):
-            # decide whether to reuse
-            if global_pool and random.random() < SHARED_COURSE_REUSE_PROB:
-                # reuse an existing course (by reference)
-                # but to reflect database design (courses table is global), we do nothing
-                # here, courses are shared by majors through many-to-many or conceptually by using same course_id
-                # We'll ensure courses list contains the pool already
-                continue
-            # create a new course
-            base = random.choice(COURSE_BASES)
-            title = base
-            code = unique_code_generator(course_codes, prefix=base.split()[0][:2].upper(), length=8)
-            ects = random.choice([2,3,4,5])
-            courses.append({'course_id': course_id, 'code': code, 'title': title, 'ects_credits': ects})
-            global_pool.append(course_id)
-            course_id += 1
-    # if we ended up with fewer courses than expected, add some extra
-    if len(courses) < 200:
-        for _ in range(200 - len(courses)):
-            base = random.choice(COURSE_BASES)
-            title = base
-            code = unique_code_generator(course_codes, prefix=base.split()[0][:2].upper(), length=8)
-            ects = random.choice([2,3,4,5])
-            courses.append({'course_id': course_id, 'code': code, 'title': title, 'ects_credits': ects})
-            course_id += 1
-
-# -------------------------------
-# 4) Workers
-# -------------------------------
-
-def make_email(first,last,counter=0):
-    base = f"{first.lower()}.{last.lower()}"
-    if counter:
-        base = f"{base}{counter}"
-    return base + '@university.example'
-
-
-def create_workers():
-    for i in range(1, NUM_WORKERS+1):
-        first = random.choice(FIRST_NAMES)
-        last = random.choice(LAST_NAMES)
-        email = make_email(first,last)
-        c = 1
-        while email in email_set:
-            c += 1
-            email = make_email(first,last,c)
-        email_set.add(email)
-        telephone = f"+48{random.randint(500000000,699999999)}"
-        while telephone in telephone_set:
-            telephone = f"+48{random.randint(500000000,699999999)}"
-        telephone_set.add(telephone)
-        faculty_id = random.choice(faculties)['faculty_id'] if random.random() < 0.8 else None
-        teaching = (i <= NUM_TEACHING)
-        workers.append({'worker_id': i, 'first_name': first, 'last_name': last, 'telephone': telephone,
-                        'email': email, 'sex': random.choice(['M','F']), 'faculty_id': faculty_id, 'teaching': teaching})
-
-    # assign some deans to faculties (pick teaching workers)
-    teaching_workers = [w for w in workers if w['teaching']]
-    for fac in faculties:
-        dean = random.choice(teaching_workers)
-        fac['dean_worker_id'] = dean['worker_id']
-
-# -------------------------------
-# 5) Students
-# -------------------------------
-
-def create_students():
-    for i in range(1, NUM_STUDENTS+1):
-        first = random.choice(FIRST_NAMES)
-        last = random.choice(LAST_NAMES)
-        # make emails relatively unique
-        email = f"{first.lower()}.{last.lower()}{i}@student.example"
-        telephone = None
-        if random.random() < 0.7:
-            telephone = f"+48{random.randint(600000000,799999999)}"
-            while telephone in telephone_set:
-                telephone = f"+48{random.randint(600000000,799999999)}"
-            telephone_set.add(telephone)
-        address = f"{random.randint(1,200)} {random.choice(['Main St','1st Ave','University Rd','College St'])}, City"
-        students.append({'student_id': i, 'first_name': first, 'last_name': last, 'telephone': telephone,
-                         'email': email, 'address': address, 'sex': random.choice(['M','F'])})
-
-# -------------------------------
-# 6) Groups (schedules) — must avoid instructor overlaps and generate valid times
-# -------------------------------
-
-def create_groups():
-    group_id = 1
-    # semester start/end
-    sem_start = datetime.date.today().replace(month=10, day=1)  # arbitrary
-    sem_end = sem_start + datetime.timedelta(weeks=16)
-
-    # Helper: maintain map of instructor -> list of groups to check overlap
-    instr_schedule: Dict[int, List[Dict]] = {}
-
-    for c in courses:
-        n_groups = random.randint(GROUPS_PER_COURSE_RANGE[0], GROUPS_PER_COURSE_RANGE[1])
-        for _ in range(n_groups):
-            # pick an instructor who is teaching
-            instr = random.choice([w for w in workers if w['teaching']])
-            instructor_id = instr['worker_id']
-
-            # attempt to find non-overlapping slot for this instructor
-            attempts = 0
-            while True:
-                day = random.randint(1,5)  # Mon-Fri
-                # start times between 8:00 and 18:00
-                start_min = random.choice(range(8*60, 18*60, 30))
-                duration = random.choice([60, 90, 120])
-                end_min = start_min + duration
-                if end_min > 20*60:
-                    attempts += 1
-                    if attempts > 20:
-                        # give up, pick a different instructor
-                        instructor_id = random.choice([w['worker_id'] for w in workers if w['teaching']])
-                        attempts = 0
-                    continue
-                s_time = minutes_to_time(start_min)
-                e_time = minutes_to_time(end_min)
-                # choose date range inside semester
-                span_weeks = random.randint(8,16)
-                s_date = sem_start + datetime.timedelta(weeks=random.randint(0, 8))
-                e_date = s_date + datetime.timedelta(weeks=span_weeks)
-                if e_date > sem_end:
-                    e_date = sem_end
-
-                # check overlap with instructor schedule
-                conflict = False
-                for g in instr_schedule.get(instructor_id, []):
-                    if g['day_of_week'] != day:
-                        continue
-                    if not date_range_overlap(g['start_date'], g['end_date'], s_date, e_date):
-                        continue
-                    if time_overlap(g['start_time'], g['end_time'], s_time, e_time):
-                        conflict = True
-                        break
-                if not conflict:
-                    break
-                attempts += 1
-                if attempts > 200:
-                    # fail safe: allow overlap by picking another instructor
-                    instructor_id = random.choice([w['worker_id'] for w in workers if w['teaching']])
-                    instr_schedule.setdefault(instructor_id, [])
-                    attempts = 0
-
-            # generate unique group code
-            base_prefix = c['code'][:3].upper()
-            gcode = unique_code_generator(group_codes, prefix=base_prefix, length=8)
-
-            group = {
-                'group_id': group_id,
-                'course_id': c['course_id'],
-                'instructor_worker_id': instructor_id,
-                'group_code': gcode,
-                'day_of_week': day,
-                'start_time': s_time,
-                'end_time': e_time,
-                'start_date': s_date,
-                'end_date': e_date
-            }
-            groups.append(group)
-            instr_schedule.setdefault(instructor_id, []).append(group)
-            group_id += 1
-
-# -------------------------------
-# 7) Many-to-many: students_to_majors
-# -------------------------------
-
-def assign_students_to_majors():
-    for s in students:
-        n = random.randint(STUDENT_MAJORS_RANGE[0], STUDENT_MAJORS_RANGE[1])
-        chosen = random.sample(majors, k=n)
-        for m in chosen:
-            students_to_majors.append((s['student_id'], m['major_id'], datetime.datetime.now().isoformat()))
-
-# -------------------------------
-# 8) students_to_groups - ensure students don't get overlapping group's schedule
-# -------------------------------
-
-def assign_students_to_groups():
-    # Build quick access structures
-    group_by_id = {g['group_id']: g for g in groups}
-    student_schedule: Dict[int, List[Dict]] = {s['student_id']: [] for s in students}
-
-    all_group_ids = [g['group_id'] for g in groups]
-    for s in students:
-        desired = random.randint(STUDENT_GROUPS_RANGE[0], STUDENT_GROUPS_RANGE[1])
-        attempts = 0
-        chosen_count = 0
-        while chosen_count < desired and attempts < desired * 50:
-            gid = random.choice(all_group_ids)
-            g = group_by_id[gid]
-            # check for overlap with student's existing groups
-            conflict = False
-            for sg in student_schedule[s['student_id']]:
-                if sg['day_of_week'] != g['day_of_week']:
-                    continue
-                if not date_range_overlap(sg['start_date'], sg['end_date'], g['start_date'], g['end_date']):
-                    continue
-                if time_overlap(sg['start_time'], sg['end_time'], g['start_time'], g['end_time']):
-                    conflict = True
-                    break
-            if not conflict:
-                students_to_groups.append((s['student_id'], gid))
-                student_schedule[s['student_id']].append(g)
-                chosen_count += 1
-            attempts += 1
-        # if we couldn't reach desired number because of conflicts, that's fine
-
-# -------------------------------
-# 9) Marks
-# -------------------------------
-
-def create_marks():
-    # For simplicity, give marks only for courses where student attends at least one group
-    groups_by_course: Dict[int, List[int]] = {}
-    for g in groups:
-        groups_by_course.setdefault(g['course_id'], []).append(g['group_id'])
-
-    # Build student->courses mapping via groups
-    student_courses: Dict[int, Set[int]] = {s['student_id']: set() for s in students}
-    for s_id, g_id in students_to_groups:
-        c_id = next(g for g in groups if g['group_id'] == g_id)['course_id']
-        student_courses[s_id].add(c_id)
-
-    mark_id = 1
-    for s in students:
-        s_id = s['student_id']
-        courses_taken = list(student_courses.get(s_id, []))
-        if not courses_taken:
-            # give some random course marks
-            courses_taken = random.sample([c['course_id'] for c in courses], k=random.randint(0,3))
-        num_marks = random.randint(MARKS_PER_STUDENT[0], MARKS_PER_STUDENT[1])
-        # choose courses with repetition allowed but we'll limit entries
-        for _ in range(num_marks):
-            if not courses_taken:
-                break
-            course_id = random.choice(courses_taken)
-            mark = random.choice([2,3,3,4,4,5])
-            weight = random.choice([1,1,1,2])
-            added = datetime.date.today() - datetime.timedelta(days=random.randint(0,365))
-            marks.append({'mark_id': mark_id, 'student_id': s_id, 'course_id': course_id,
-                          'mark': mark, 'weight': weight, 'added': added.isoformat()})
-            mark_id += 1
-
-# -------------------------------
-# 10) Validation + Fixing
-# -------------------------------
-
-def validate_and_fix():
-    # 1) Unique group codes
-    seen = set()
-    fixes = 0
-    for g in groups:
-        if g['group_code'] in seen:
-            # fix by generating a new code
-            new = unique_code_generator(group_codes, prefix=g['group_code'][:3], length=8)
-            g['group_code'] = new
-            fixes += 1
-        seen.add(g['group_code'])
-
-    # 2) Ensure group times are valid (end_time > start_time)
-    for g in groups:
-        if time_to_minutes(g['end_time']) <= time_to_minutes(g['start_time']):
-            # extend end_time by 60 minutes
-            g['end_time'] = minutes_to_time(time_to_minutes(g['start_time']) + 60)
-            fixes += 1
-
-    # 3) Ensure no student has overlapping groups (if they do, drop the later assignment)
-    student_schedule: Dict[int, List[Dict]] = {s['student_id']: [] for s in students}
-    new_stg = []
-    removed = 0
-    global students_to_groups
-    for s_id, g_id in students_to_groups:
-        g = next(gr for gr in groups if gr['group_id'] == g_id)
-        conflict = False
-        for sg in student_schedule[s_id]:
-            if sg['day_of_week'] != g['day_of_week']:
-                continue
-            if not date_range_overlap(sg['start_date'], sg['end_date'], g['start_date'], g['end_date']):
-                continue
-            if time_overlap(sg['start_time'], sg['end_time'], g['start_time'], g['end_time']):
-                conflict = True
-                break
-        if not conflict:
-            student_schedule[s_id].append(g)
-            new_stg.append((s_id, g_id))
+# ============================================================================
+# Database Generator (Main Class)
+# ============================================================================
+class DatabaseGenerator:
+    """Orchestrates generation of all database entities."""
+    
+    def __init__(self):
+        self.unique_gen = UniqueGenerators()
+        self.names = DataLoader.load_names()
+        self.majors = DataLoader.load_majors(MAJORS_PATH)
+        
+        # Entity tracking
+        self.faculties: Dict[str, int] = {}
+        self.faculties_to_workers: Dict[int, List[int]] = {}
+        self.instructor_schedule: Dict[int, List[Tuple[str, str, int]]] = {}
+        self.groups: Set[ScheduleSlot] = set()
+        self.group_data: List[Dict] = []
+        self.students_to_courses: Dict[int, Set[int]] = {}
+        self.num_students = 0
+    
+    def generate_person(self, sex: Optional[str] = None) -> Dict[str, any]:
+        """Generate a person's basic info with weighted name selection."""
+        if sex is None:
+            sex = random.choices([s[0] for s in SEX], weights=[s[1] for s in SEX], k=1)[0]
+            if random.random() < NULL_SEX_CHANCE:
+                sex = None
+        
+        # Select appropriate name lists
+        if not sex or sex == "O":
+            name_list = random.choice([self.names['M_NAMES'], self.names['F_NAMES']])
+            last_list = random.choice([self.names['M_LASTNAMES'], self.names['F_LASTNAMES']])
+        elif sex == "F":
+            name_list = self.names['F_NAMES']
+            last_list = self.names['F_LASTNAMES']
         else:
-            removed += 1
-    if removed > 0:
-        print(f"Removed {removed} student->group assignments due to overlaps.")
-    # replace
-    students_to_groups = new_stg
+            name_list = self.names['M_NAMES']
+            last_list = self.names['M_LASTNAMES']
+        
+        first_name = random.choices(*zip(*name_list))[0]
+        last_name = random.choices(*zip(*last_list))[0]
+        
+        return {
+            'first_name': first_name,
+            'last_name': last_name,
+            'sex': sex,
+            'telephone': self.unique_gen.generate_phone(),
+            'email': self.unique_gen.generate_email(first_name, last_name)
+        }
+    
+    def create_faculties(self) -> List[Dict]:
+        """Generate faculty records."""
+        faculties = []
+        faculty_id = 1
+        
+        for major_info in self.majors.values():
+            faculty_name = major_info["faculty"]
+            if faculty_name not in self.faculties:
+                self.faculties[faculty_name] = faculty_id
+                faculties.append({
+                    "faculty_id": faculty_id,
+                    "name": faculty_name,
+                    "dean_worker_id": random.randint(1, NUM_OF_WORKERS),  # Updated later
+                })
+                faculty_id += 1
+        
+        return faculties
+    
+    def create_majors(self) -> List[Dict]:
+        """Generate major records with codes."""
+        majors = []
+        
+        for idx, (major_name, major_info) in enumerate(self.majors.items(), 1):
+            code = self.unique_gen.generate_code(major_name[:3].upper() + "-")
+            
+            majors.append({
+                "major_id": idx,
+                "name": major_name,
+                "code": code,
+                "faculty_id": self.faculties[major_info["faculty"]],
+            })
+            
+            # Store back for later use
+            major_info["code"] = code
+            major_info["id"] = idx
+        
+        return majors
+    
+    def create_courses(self) -> List[Dict]:
+        """Generate courses with ECTS and update major structure."""
+        
+        courses = []
+        course_id = 1
+        
+        for major_name, major_info in self.majors.items():
+            student_count = random.choices(*MAJOR_SIZES)[0]
+            
+            for sem_idx, semester in enumerate(major_info["semesters"]):
+                semester_students = int(student_count * STUDENT_DECAY[sem_idx])
+                semester["student_count"] = semester_students
+                
+                for course_idx, course_title in enumerate(semester["courses"]):
+                    code = self.unique_gen.generate_code(
+                        f"{major_info['code']}-{course_title[:3].upper()}-"
+                    )
+                    ects = random.choices(*ECTS_DISTRIBUTION)[0]
+                    
+                    courses.append({
+                        "course_id": course_id,
+                        "title": course_title,
+                        "code": code,
+                        "major_id": major_info["id"],
+                        "ects_credits": ects,
+                    })
+                    
+                    # Update semester data
+                    semester["courses"][course_idx] = {
+                        "title": course_title,
+                        "code": code,
+                        "id": course_id,
+                        "group_count": math.ceil(semester_students / STUDENTS_PER_GROUP),
+                    }
+                    course_id += 1
+        
+        return courses
+    
+    def create_workers(self) -> List[Dict]:
+        """Generate worker records."""
+        workers = []
+        self.faculties_to_workers = {fid: [] for fid in self.faculties.values()}
+        
+        for worker_id in range(1, NUM_OF_WORKERS + 1):
+            person = self.generate_person()
+            faculty_id = random.randint(1, len(self.faculties))
+            
+            worker = {
+                "worker_id": worker_id,
+                **person,
+                "faculty_id": faculty_id,
+                "teaching": False,
+            }
+            
+            workers.append(worker)
+            self.faculties_to_workers[faculty_id].append(worker_id)
+            self.instructor_schedule[worker_id] = []
+        
+        return workers
+    
+    def update_deans(self, faculties: List[Dict]) -> List[Dict]:
+        """Assign deans from faculty workers."""
+        for faculty in faculties:
+            faculty["dean_worker_id"] = random.choice(
+                self.faculties_to_workers[faculty["faculty_id"]]
+            )
+        return faculties
+    
+    def generate_time_slots(self, start_hour=8, end_hour=20, 
+                           lesson_min=90, break_min=15) -> List[Tuple[str, str]]:
+        """Generate available time slots for a day."""
+        slots = []
+        current = datetime(2000, 1, 1, start_hour, 0)
+        lesson_delta = timedelta(minutes=lesson_min)
+        break_delta = timedelta(minutes=break_min)
+        end_time = time(hour=end_hour, minute=0)
+        
+        while current.time() <= end_time:
+            slot_end = current + lesson_delta
+            if slot_end.time() > end_time:
+                break
+            slots.append((
+                current.time().strftime("%H:%M"),
+                slot_end.time().strftime("%H:%M")
+            ))
+            current = slot_end + break_delta
+        
+        return slots
+    
+    def find_available_instructor(self, day: int, start: str, end: str, 
+                                 faculty_name: str) -> int:
+        """Find instructor without scheduling conflicts."""
+        faculty_id = self.faculties[faculty_name]
+        workers = self.faculties_to_workers[faculty_id]
+        
+        for _ in range(len(workers) * 2):  # Limit attempts
+            instructor = random.choice(workers)
+            
+            # Check for conflicts
+            has_conflict = any(
+                day == existing_day and (
+                    (start > existing_start and start < existing_end) or
+                    (existing_start > start and existing_start < end)
+                )
+                for existing_start, existing_end, existing_day 
+                in self.instructor_schedule[instructor]
+            )
+            
+            if not has_conflict:
+                self.instructor_schedule[instructor].append((start, end, day))
+                return instructor
+        
+        # Fallback: just pick someone
+        instructor = random.choice(workers)
+        self.instructor_schedule[instructor].append((start, end, day))
+        return instructor
+    
+    def create_groups(self) -> List[Dict]:
+        """Generate lecture and exercise groups with conflict avoidance."""
+        time_slots = self.generate_time_slots()
+        days = [1, 2, 3, 4, 5]
+        group_id = 1
+        
+        # Create all groups
+        for major_name, major_info in self.majors.items():
+            for semester in major_info["semesters"]:
+                # Lectures first
+                for course in semester["courses"]:
+                    group_id = self._create_group_with_retry(
+                        group_id, course, semester, major_info,
+                        is_lecture=True, cohort=-1,
+                        time_slots=time_slots, days=days
+                    )
+                
+                # Then exercises
+                for course in semester["courses"]:
+                    for cohort in range(1, course["group_count"] + 1):
+                        group_id = self._create_group_with_retry(
+                            group_id, course, semester, major_info,
+                            is_lecture=False, cohort=cohort,
+                            time_slots=time_slots, days=days
+                        )
+        
+        return self.group_data
+    
+    def _create_group_with_retry(self, group_id, course, semester, major_info,
+                                 is_lecture, cohort, time_slots, days) -> int:
+        """Create group, retrying if schedule conflicts exist."""
+        max_attempts = 100
+        
+        for _ in range(max_attempts):
+            day = random.choice(days)
+            start_time, end_time = random.choice(time_slots)
+            
+            slot = ScheduleSlot(
+                day_of_week=day,
+                start_time=start_time,
+                end_time=end_time,
+                major=major_info["id"],
+                semester=semester["semester"],
+                cohort=cohort,
+                is_lecture=is_lecture
+            )
+            
+            # Check for conflicts
+            if not any(slot.overlaps_with(existing) for existing in self.groups):
+                self.groups.add(slot)
+                
+                code_suffix = "-WYK-" if is_lecture else "-CWI-"
+                code = self.unique_gen.generate_code(course["code"], code_suffix)
+                
+                instructor = self.find_available_instructor(
+                    day, start_time, end_time, major_info["faculty"]
+                )
+                
+                self.group_data.append({
+                    "group_id": group_id,
+                    "course_id": course["id"],
+                    "instructor_worker_id": instructor,
+                    "code": code,
+                    "day_of_week": day,
+                    "start_date": datetime(2025, 10, 1),
+                    "end_date": datetime(2026, 6, 30),
+                    "start_time": start_time,
+                    "end_time": end_time,
+                    "_is_lecture": is_lecture,
+                    "_cohort": cohort,
+                    "_major": major_info["id"],
+                    "_semester": semester["semester"],
+                    "_assigned": 0
+                })
+                
+                return group_id + 1
+        
+        raise RuntimeError(f"Could not schedule group after {max_attempts} attempts")
+    
+    def get_cohort_groups(self, major_id: int, semester: int, cohort: int) -> List[Dict]:
+        """Get all groups (including lectures) for a specific cohort."""
+        cohort_groups = []
+        for group in self.group_data:
+            if group["_major"] == major_id and group["_semester"] == semester:
+                if group["_is_lecture"] or group["_cohort"] == cohort:
+                    cohort_groups.append(group)
+        return cohort_groups
+    
+    def assign_students(self) -> Tuple[List[Dict], List[Dict]]:
+        """Assign students to groups and majors."""
+        students_to_majors = []
+        students_to_groups = []
+        student_id = 1
+        
+        # Group by cohort for assignment
+        cohort_groups = {}
+        for group in self.group_data:
+            if not group["_is_lecture"]:
+                key = (group["_major"], group["_semester"], group["_cohort"])
+                if key not in cohort_groups:
+                    cohort_groups[key] = []
+                cohort_groups[key].append(group)
+        
+        # Add lectures to cohorts
+        for group in self.group_data:
+            if group["_is_lecture"]:
+                major_id, semester = group["_major"], group["_semester"]
+                for key in cohort_groups:
+                    if key[0] == major_id and key[1] == semester:
+                        cohort_groups[key].append(group)
+        
+        # Assign students to cohorts
+        for cohort_key, groups in cohort_groups.items():
+            if cohort_key[2] == -1:  # Skip lecture-only entries
+                continue
+                
+            num_students = random.randint(STUDENTS_PER_GROUP - 5, STUDENTS_PER_GROUP + 1)
+            
+            for _ in range(num_students):
+                self._assign_student_to_cohort(student_id, groups, 
+                                              students_to_majors, students_to_groups)
+                student_id += 1
+        
+        self.num_students = student_id
+        return students_to_majors, students_to_groups
+    
+    def _assign_student_to_cohort(self, student_id: int, groups: List[Dict],
+                                  students_to_majors: List[Dict], 
+                                  students_to_groups: List[Dict]):
+        """Helper to assign one student to a cohort."""
+        if student_id not in self.students_to_courses:
+            self.students_to_courses[student_id] = set()
+        
+        # Enroll in all courses in the cohort
+        for group in groups:
+            self.students_to_courses[student_id].add(group["course_id"])
+            students_to_groups.append({
+                "student_id": student_id,
+                "group_id": group["group_id"]
+            })
+            group["_assigned"] += 1
+        
+        # Record student's major-semester mapping
+        students_to_majors.append({
+            "student_id": student_id,
+            "major_id": groups[0]["_major"],
+            "semester": groups[0]["_semester"],
+        })
+    
+    def add_multi_major_students(self, students_to_majors: List[Dict], 
+                                students_to_groups: List[Dict]) -> Tuple[List[Dict], List[Dict]]:
+        """Add students with 2 or 3 majors (maintaining original percentages)."""
+        print(f"Initial student count: {self.num_students}")
+        
+        double_major_count = int(DOUBLE_MAJOR_CHANCE * self.num_students)
+        triple_major_count = int(TRIPLE_MAJOR_CHANCE * self.num_students)
+        
+        print(f"Adding {double_major_count} double-major and {triple_major_count} triple-major students")
+        
+        # Add double-major students
+        for _ in range(double_major_count):
+            cohorts = self._find_non_conflicting_cohorts(2)
+            self._assign_multi_major_student(cohorts, students_to_majors, students_to_groups)
+        
+        # Add triple-major students
+        for _ in range(triple_major_count):
+            cohorts = self._find_non_conflicting_cohorts(3)
+            self._assign_multi_major_student(cohorts, students_to_majors, students_to_groups)
+        
+        print(f"Final student count: {self.num_students}")
+        return students_to_majors, students_to_groups
+    
+    def _find_non_conflicting_cohorts(self, count: int) -> List[List[Dict]]:
+        """Find 'count' non-overlapping cohorts from different majors."""
+        max_attempts = 1000
+        
+        for _ in range(max_attempts):
+            # Pick random exercise groups from different majors
+            candidate_groups = random.sample(
+                [g for g in self.group_data if not g["_is_lecture"]], 
+                count
+            )
+            
+            # Ensure all are from different majors
+            majors = [g["_major"] for g in candidate_groups]
+            if len(set(majors)) != count:
+                continue
+            
+            # Get full cohorts for each candidate
+            cohorts = [
+                self.get_cohort_groups(g["_major"], g["_semester"], g["_cohort"])
+                for g in candidate_groups
+            ]
+            
+            # Check for schedule conflicts across all cohorts
+            all_groups = sum(cohorts, [])  # Flatten
+            conflict_found = False
+            
+            for g1, g2 in combinations(all_groups, 2):
+                slot1 = ScheduleSlot(
+                    g1["day_of_week"], g1["start_time"], g1["end_time"],
+                    g1["_major"], g1["_semester"], g1["_cohort"], g1["_is_lecture"]
+                )
+                slot2 = ScheduleSlot(
+                    g2["day_of_week"], g2["start_time"], g2["end_time"],
+                    g2["_major"], g2["_semester"], g2["_cohort"], g2["_is_lecture"]
+                )
+                
+                if slot1.overlaps_with(slot2):
+                    conflict_found = True
+                    break
+            
+            if not conflict_found:
+                return cohorts
+        
+        raise RuntimeError(f"Could not find {count} non-conflicting cohorts after {max_attempts} attempts")
+    
+    def _assign_multi_major_student(self, cohorts: List[List[Dict]],
+                                   students_to_majors: List[Dict],
+                                   students_to_groups: List[Dict]):
+        """Assign one student with multiple majors."""
+        if self.num_students not in self.students_to_courses:
+            self.students_to_courses[self.num_students] = set()
+        
+        # Enroll in all courses across all cohorts
+        for cohort in cohorts:
+            for group in cohort:
+                self.students_to_courses[self.num_students].add(group["course_id"])
+                students_to_groups.append({
+                    "student_id": self.num_students,
+                    "group_id": group["group_id"]
+                })
+                group["_assigned"] += 1
+        
+        # Add one major record per cohort
+        for cohort in cohorts:
+            students_to_majors.append({
+                "student_id": self.num_students,
+                "major_id": cohort[0]["_major"],
+                "semester": cohort[0]["_semester"],
+            })
+        
+        self.num_students += 1
+    
+    def create_students(self) -> List[Dict]:
+        """Generate student records."""
+        return [
+            {"student_id": i + 1, **self.generate_person()}
+            for i in range(self.num_students)
+        ]
+    
+    def create_marks(self) -> List[Dict]:
+        """Generate marks for students."""
+        marks = []
+        mark_id = 1
+        start_date = datetime(datetime.today().year, 10, 1)
+        end_date = datetime.today()
+        days_range = (end_date - start_date).days
+        
+        for student_id, courses in self.students_to_courses.items():
+            for course_id in courses:
+                for _ in range(random.randint(0, 4)):
+                    marks.append({
+                        "mark_id": mark_id,
+                        "student_id": student_id,
+                        "course_id": course_id,
+                        "mark": random.randint(2, 5),
+                        "weight": random.randint(1, 4),
+                        "added": start_date + timedelta(days=random.randint(0, days_range))
+                    })
+                    mark_id += 1
+        
+        return marks
+    
+    def update_teaching_flags(self, workers: List[Dict]) -> List[Dict]:
+        """Mark workers who are teaching."""
+        for worker in workers:
+            worker["teaching"] = len(self.instructor_schedule[worker["worker_id"]]) > 0
+        return workers
+    
+    def generate_all(self) -> Dict[str, List[Dict]]:
+        """Main orchestration method."""
+        print("Generating faculties...")
+        faculties = self.create_faculties()
+        
+        print("Generating majors...")
+        majors = self.create_majors()
+        
+        print("Generating courses...")
+        courses = self.create_courses()
+        
+        print("Generating workers...")
+        workers = self.create_workers()
+        faculties = self.update_deans(faculties)
+        
+        print("Scheduling groups...")
+        groups = self.create_groups()
+        
+        print("Assigning students to cohorts...")
+        students_to_majors, students_to_groups = self.assign_students()
+        
+        print("Adding multi-major students...")
+        students_to_majors, students_to_groups = self.add_multi_major_students(
+            students_to_majors, students_to_groups
+        )
+        
+        print(f"Creating {self.num_students} student records...")
+        students = self.create_students()
+        
+        print("Updating worker teaching status...")
+        workers = self.update_teaching_flags(workers)
+        
+        print("Generating marks...")
+        marks = self.create_marks()
+        
+        # Clean up internal fields from groups
+        for group in groups:
+            for key in list(group.keys()):
+                if key.startswith('_'):
+                    del group[key]
+        
+        return {
+            "faculties": faculties,
+            "majors": majors,
+            "courses": courses,
+            "workers": workers,
+            "students": students,
+            "groups": groups,
+            "students_to_majors": students_to_majors,
+            "students_to_groups": students_to_groups,
+            "marks": marks,
+        }
 
-    print(f"Validation fixed {fixes} issues.")
 
-# -------------------------------
-# 11) SQL export using COPY FROM stdin format
-# -------------------------------
-
-def esc(val: Optional[object]) -> str:
-    if val is None:
-        return '\\N'  # PostgreSQL text format for NULL in COPY
-    if isinstance(val, bool):
-        return 't' if val else 'f'
-    if isinstance(val, datetime.date):
-        return val.isoformat()
-    if isinstance(val, datetime.time):
-        return val.isoformat()
-    return str(val)
-
-
-def write_copy_block(f, table: str, columns: List[str], rows: List[Tuple]):
-    f.write(f"COPY {table} ({', '.join(columns)}) FROM stdin;\n")
-    for row in rows:
-        # escape tabs and newlines conservatively (we avoided tabs in generation)
-        line = '\t'.join(esc(x) for x in row)
-        f.write(line + "\n")
-    f.write("\\.\n\n")
+# ============================================================================
+# Output Generation
+# ============================================================================
+def format_sql_value(value) -> str:
+    """Format a Python value for PostgreSQL COPY format."""
+    if value is None:
+        return "\\N"
+    if isinstance(value, bool):
+        return "t" if value else "f"
+    if isinstance(value, (datetime, date)):
+        return value.date().isoformat() if isinstance(value, datetime) else value.isoformat()
+    if isinstance(value, time):
+        return value.isoformat()
+    return str(value)
 
 
-def export_to_sql(filename: str):
-    with open(filename, 'w', encoding='utf-8') as f:
-        f.write('-- Generated SQL data using COPY FROM stdin; format\n')
-        f.write('BEGIN;\n')
+def write_copy_statement(data: List[Dict], table_name: str, file_handle, id_column: Optional[str] = None):
+    """Write PostgreSQL COPY statement with optional sequence reset."""
+    if not data:
+        return
+    
+    count = 0
+    columns = ", ".join(data[0].keys())
+    first_line = f"COPY {table_name} ({columns}) FROM stdin;\n"
+    print(first_line)
+    file_handle.write(first_line)
+    
+    for row in data:
+        values = "\t".join(format_sql_value(row[col]) for col in row.keys())
+        print([format_sql_value(row[col]) for col in row.keys()])  # Match original debug output
+        file_handle.write(f"{values}\n")
+        count += 1
+    
+    file_handle.write("\\.\n")
+    
+    # Reset sequence if id_column specified
+    if id_column:
+        file_handle.write(f"SELECT setval('{table_name}_{id_column}_seq', {count}, true);")
+    
+    file_handle.write("\n\n")
 
-        # faculties (faculty_id, name, dean_worker_id)
-        rows = [(fac['faculty_id'], fac['name'], fac['dean_worker_id']) for fac in faculties]
-        write_copy_block(f, 'faculties', ['faculty_id','name','dean_worker_id'], rows)
 
-        # majors (major_id, name, code, faculty_id)
-        rows = [(m['major_id'], m['name'], m['code'], m['faculty_id']) for m in majors]
-        write_copy_block(f, 'majors', ['major_id','name','code','faculty_id'], rows)
+def write_sql_file(data: Dict[str, List[Dict]], output_path: str):
+    """Write all data to SQL file with proper sequence resets."""
+    table_configs = [
+        ("faculties", "faculty_id"),
+        ("majors", "major_id"),
+        ("courses", "course_id"),
+        ("workers", "worker_id"),
+        ("students", "student_id"),
+        ("groups", "group_id"),
+        ("students_to_majors", None),
+        ("students_to_groups", None),
+        ("marks", "mark_id"),
+    ]
+    
+    with open(output_path, "w", encoding="utf-8") as f:
+        f.write("BEGIN;\n\n")
+        
+        for table_name, id_column in table_configs:
+            print(f"Writing {table_name}...")
+            write_copy_statement(data[table_name], table_name, f, id_column)
+        
+        f.write("\nCOMMIT;\n")
+    
+    print(f"\nSQL file written to: {output_path}")
 
-        # courses (course_id, code, title, ects_credits)
-        rows = [(c['course_id'], c['code'], c['title'], c['ects_credits']) for c in courses]
-        write_copy_block(f, 'courses', ['course_id','code','title','ects_credits'], rows)
 
-        # workers (worker_id, first_name, last_name, telephone, email, sex, faculty_id, teaching)
-        rows = [(w['worker_id'], w['first_name'], w['last_name'], w['telephone'], w['email'], w['sex'], w['faculty_id'], w['teaching']) for w in workers]
-        write_copy_block(f, 'workers', ['worker_id','first_name','last_name','telephone','email','sex','faculty_id','teaching'], rows)
-
-        # students (student_id, first_name, last_name, telephone, email, address, sex)
-        rows = [(s['student_id'], s['first_name'], s['last_name'], s['telephone'], s['email'], s['address'], s['sex']) for s in students]
-        write_copy_block(f, 'students', ['student_id','first_name','last_name','telephone','email','address','sex'], rows)
-
-        # groups (group_id, course_id, instructor_worker_id, group_code, day_of_week, start_time, end_time, start_date, end_date)
-        rows = []
-        for g in groups:
-            rows.append((g['group_id'], g['course_id'], g['instructor_worker_id'], g['group_code'], g['day_of_week'], g['start_time'], g['end_time'], g['start_date'], g['end_date']))
-        write_copy_block(f, 'groups', ['group_id','course_id','instructor_worker_id','group_code','day_of_week','start_time','end_time','start_date','end_date'], rows)
-
-        # students_to_majors (student_id, major_id, declared_at)
-        rows = [(s_id, m_id, dt) for (s_id,m_id,dt) in students_to_majors]
-        write_copy_block(f, 'students_to_majors', ['student_id','major_id','declared_at'], rows)
-
-        # students_to_groups (student_id, group_id)
-        rows = [(s_id, g_id) for (s_id,g_id) in students_to_groups]
-        write_copy_block(f, 'students_to_groups', ['student_id','group_id'], rows)
-
-        # marks (mark_id, student_id, course_id, mark, weight, added)
-        rows = [(m['mark_id'], m['student_id'], m['course_id'], m['mark'], m['weight'], m['added']) for m in marks]
-        write_copy_block(f, 'marks', ['mark_id','student_id','course_id','mark','weight','added'], rows)
-
-        # update sequences - assumes default sequence names
-        def setval_line(table, col, max_id):
-            return f"SELECT setval('{table}_{col}_seq', {max_id}, true);\n"
-
-        f.write('-- Adjust sequences\n')
-        f.write(setval_line('faculties','faculty_id', max([fac['faculty_id'] for fac in faculties] or [1])))
-        f.write(setval_line('majors','major_id', max([m['major_id'] for m in majors] or [1])))
-        f.write(setval_line('courses','course_id', max([c['course_id'] for c in courses] or [1])))
-        f.write(setval_line('workers','worker_id', max([w['worker_id'] for w in workers] or [1])))
-        f.write(setval_line('students','student_id', max([s['student_id'] for s in students] or [1])))
-        f.write(setval_line('groups','group_id', max([g['group_id'] for g in groups] or [1])))
-        f.write(setval_line('marks','mark_id', max([m['mark_id'] for m in marks] or [1])))
-
-        f.write('COMMIT;\n')
-
-    print(f"Wrote data to {filename}")
-
-# -------------------------------
-# Main orchestration (step-by-step)
-# -------------------------------
-
+# ============================================================================
+# Main Entry Point
+# ============================================================================
 def main():
-    print('1) Creating faculties...')
-    create_faculties(NUM_FACULTIES)
-    print(f'   -> {len(faculties)} faculties')
+    print("Starting database generation...")
+    generator = DatabaseGenerator()
+    data = generator.generate_all()
+    write_sql_file(data, OUTPUT_FILE)
+    print("Complete!")
 
-    print('2) Creating majors...')
-    create_majors()
-    print(f'   -> {len(majors)} majors')
 
-    print('3) Creating courses...')
-    create_courses()
-    print(f'   -> {len(courses)} courses')
-
-    print('4) Creating workers...')
-    create_workers()
-    print(f'   -> {len(workers)} workers ({sum(1 for w in workers if w["teaching"])} teaching)')
-
-    print('5) Creating students...')
-    create_students()
-    print(f'   -> {len(students)} students')
-
-    print('6) Creating groups & schedules...')
-    create_groups()
-    print(f'   -> {len(groups)} groups')
-
-    print('7) Assigning students to majors...')
-    assign_students_to_majors()
-    print(f'   -> {len(students_to_majors)} student->major links')
-
-    print('8) Assigning students to groups (avoid overlaps where possible)...')
-    assign_students_to_groups()
-    print(f'   -> {len(students_to_groups)} student->group links')
-
-    print('9) Creating marks...')
-    create_marks()
-    print(f'   -> {len(marks)} marks')
-
-    print('10) Validating & fixing issues...')
-    validate_and_fix()
-
-    print('11) Exporting to SQL using COPY FROM stdin; format...')
-    export_to_sql(OUTPUT_SQL)
-    print('\nAll done!')
-
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-

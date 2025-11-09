@@ -1,0 +1,1440 @@
+{
+  "Matematyka stosowana": {
+    "faculty": "Wydział Matematyki i Fizyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Analiza matematyczna I",
+          "Algebra liniowa",
+          "Wprowadzenie do programowania",
+          "Rachunek różniczkowy i całkowy w zastosowaniach",
+          "Matematyka dyskretna",
+          "Seminarium wprowadzające"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Analiza matematyczna II",
+          "Równania różniczkowe zwyczajne",
+          "Metody numeryczne I",
+          "Statystyka i prawdopodobieństwo",
+          "Modelowanie matematyczne I",
+          "Laboratorium komputerowe"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Analiza zespolona",
+          "Metody numeryczne II",
+          "Optymalizacja i metody optymalizacyjne",
+          "Równania różniczkowe cząstkowe",
+          "Modelowanie matematyczne II",
+          "Metody statystyczne w analizie danych"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Teoria miary i całki",
+          "Metody numeryczne dla problemów nieliniowych",
+          "Stochastyczne procesy matematyczne",
+          "Analiza funkcjonalna",
+          "Zastosowania optymalizacji",
+          "Projekt zespołowy - modelowanie"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Metody obliczeniowe w naukach stosowanych",
+          "Metody statystyczne i estymacja",
+          "Symulacje komputerowe",
+          "Analiza numeryczna równań różniczkowych cząstkowych",
+          "Wybrane zagadnienia z matematyki stosowanej",
+          "Przedmiot specjalizacyjny I"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Matematyka obliczeniowa w projektach inżynierskich",
+          "Metody optymalizacji zaawansowanej",
+          "Analiza danych i wizualizacja",
+          "Przedmiot specjalizacyjny II",
+          "Seminarium licencjackie",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Inżynieria materiałowa": {
+    "faculty": "Wydział Matematyki i Fizyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do inżynierii materiałowej",
+          "Chemia ogólna",
+          "Fizyka materiałów I",
+          "Matematyka dla inżynierów",
+          "Rysunek techniczny i CAD"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Struktura materiałów i krystalografia",
+          "Właściwości mechaniczne materiałów",
+          "Metody badań materiałów I",
+          "Termodynamika materiałów",
+          "Materiały polimerowe"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Materiały metaliczne i stopy",
+          "Procesy obróbki i wytwarzania materiałów",
+          "Metody badań materiałów II",
+          "Wytrzymałość materiałów",
+          "Laboratorium materiałoznawcze"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Materiały ceramiczne i kompozytowe",
+          "Korozja i ochrona materiałów",
+          "Charakteryzacja mikrostruktury",
+          "Projektowanie materiałowe",
+          "Technologie wytwarzania cienkich warstw"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Zaawansowane metody badawcze",
+          "Modelowanie własności materiałowych",
+          "Badania nieniszczące",
+          "Zastosowania materiałów w przemyśle",
+          "Nanomateriały",
+          "Praktyka przemysłowa"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Materiały funkcjonalne",
+          "Projekt inżynierski I",
+          "Zarządzanie jakością i normy materiałowe",
+          "Przedmiot specjalizacyjny I",
+          "Biomaterialy"
+        ]
+      },
+      {
+        "semester": 7,
+        "courses": [
+          "Projekt dyplomowy",
+          "Zaawansowane techniki charakteryzacji",
+          "Przedmiot specjalizacyjny II",
+          "Seminarium dyplomowe",
+          "Praktyka przemysłowa zaawansowana"
+        ]
+      }
+    ]
+  },
+  "Fizyka teoretyczna": {
+    "faculty": "Wydział Matematyki i Fizyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Mechanika klasyczna I",
+          "Matematyka dla fizyków I",
+          "Fizyka matematyczna",
+          "Wstęp do teorii pola",
+          "Seminarium wprowadzające"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Mechanika klasyczna II",
+          "Analiza zespolona i transformacje",
+          "Wprowadzenie do mechaniki kwantowej",
+          "Metody matematyczne w fizyce",
+          "Laboratorium obliczeniowe"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Mechanika kwantowa I",
+          "Teoria pola klasyczna",
+          "Równania różniczkowe cząstkowe w fizyce",
+          "Grupy i symetrie w fizyce",
+          "Metody perturbacyjne i aproksymacje"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Mechanika kwantowa II",
+          "Teoria pola kwantowego",
+          "Statystyczna teoria pola",
+          "Matematyczne aspekty teorii względności",
+          "Seminarium problemowe"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Zaawansowana teoria pola",
+          "Teoria strun",
+          "Metody numeryczne w fizyce teoretycznej",
+          "Fizyka matematyczna zaawansowana",
+          "Kosmologia teoretyczna",
+          "Projekt badawczy"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Wybrane tematy w fizyce teoretycznej",
+          "Fizyka cząstek elementarnych",
+          "Teoria informacji kwantowej",
+          "Seminarium dyplomowe",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Astrofizyka": {
+    "faculty": "Wydział Matematyki i Fizyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Mechanika klasyczna",
+          "Matematyka dla fizyków I",
+          "Fizyka ogólna I",
+          "Wprowadzenie do astronomii",
+          "Programowanie naukowe"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Elektrodynamika",
+          "Matematyka dla fizyków II",
+          "Fizyka ogólna II",
+          "Mechanika nieba",
+          "Obserwacje astronomiczne"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Mechanika kwantowa",
+          "Fizyka statystyczna",
+          "Astrofizyka gwiazd",
+          "Spektroskopia astronomiczna",
+          "Metody obserwacyjne"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Astrofizyka galaktyczna",
+          "Kosmologia obserwacyjna",
+          "Fizyka plazmy kosmicznej",
+          "Przetwarzanie danych astronomicznych",
+          "Praktyka obserwacyjna"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Astrofizyka pozagalaktyczna",
+          "Egzoplanety i astrobiologia",
+          "Wysokoenergetyczna astrofizyka",
+          "Symulacje numeryczne w astrofizyce",
+          "Projekt badawczy"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Wybrane zagadnienia astrofizyki współczesnej",
+          "Instrumentacja astronomiczna",
+          "Seminarium dyplomowe",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Informatyka": {
+    "faculty": "Wydział Informatyki i Telekomunikacji",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Podstawy programowania I",
+          "Matematyka dyskretna",
+          "Algebra liniowa",
+          "Wprowadzenie do systemów komputerowych",
+          "Podstawy logiki i teorii obliczeń"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Struktury danych i algorytmy",
+          "Programowanie obiektowe",
+          "Systemy operacyjne",
+          "Bazy danych",
+          "Matematyka w informatyce"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Algorytmy zaawansowane",
+          "Inżynieria oprogramowania",
+          "Sieci komputerowe",
+          "Programowanie współbieżne",
+          "Laboratorium programistyczne"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Zaawansowane bazy danych i systemy rozproszone",
+          "Bezpieczeństwo systemów informatycznych",
+          "Sztuczna inteligencja i uczenie maszynowe",
+          "Kompilatory i języki programowania",
+          "Projekt zespołowy"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Architektura systemów i chmura obliczeniowa",
+          "Analiza i projektowanie systemów rozproszonych",
+          "Inżynieria danych",
+          "Testowanie i zapewnienie jakości oprogramowania",
+          "Przedmiot specjalizacyjny I"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Optymalizacja oprogramowania i analiza wydajności",
+          "Projekt dyplomowy",
+          "Zarządzanie projektami IT",
+          "Przedmiot specjalizacyjny II",
+          "Seminarium dyplomowe"
+        ]
+      }
+    ]
+  },
+  "Sieci komputerowe i telekomunikacja": {
+    "faculty": "Wydział Informatyki i Telekomunikacji",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Podstawy telekomunikacji",
+          "Architektura komputerów",
+          "Matematyka dyskretna i algebra",
+          "Podstawy programowania",
+          "Fale i sygnały"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Teoria sygnałów i systemów",
+          "Sieci komputerowe I",
+          "Elektronika cyfrowa",
+          "Podstawy transmisji radiowej",
+          "Laboratorium sieciowe"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Protokoły i usługi sieciowe",
+          "Sieci bezprzewodowe i mobilne",
+          "Podstawy kodowania i modulacji",
+          "Sieciowy sprzęt i urządzenia aktywne",
+          "Bezpieczeństwo sieci"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Sieci rozległe i sieci operatorskie",
+          "Telekomunikacja światłowodowa",
+          "QoS i zarządzanie ruchem w sieciach",
+          "Wirtualizacja sieci i SDN",
+          "Sieci MPLS"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Systemy mobilne i 5G",
+          "Bezpieczeństwo i odporność sieci",
+          "Administracja i monitorowanie sieci",
+          "Internet rzeczy i sieci sensorowe",
+          "Narzędzia teleinformatyczne"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Planowanie i projektowanie sieci telekomunikacyjnych",
+          "Projekt dyplomowy",
+          "Regulacje i standardy telekomunikacyjne",
+          "Seminarium dyplomowe",
+          "Praktyka zawodowa"
+        ]
+      }
+    ]
+  },
+  "Cyberbezpieczeństwo": {
+    "faculty": "Wydział Informatyki i Telekomunikacji",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do cyberbezpieczeństwa",
+          "Podstawy programowania",
+          "Sieci komputerowe podstawy",
+          "Matematyka dyskretna",
+          "Systemy operacyjne"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Kryptografia i kryptoanaliza",
+          "Bezpieczeństwo systemów operacyjnych",
+          "Bezpieczeństwo sieci",
+          "Programowanie systemowe",
+          "Zarządzanie tożsamością i dostępem"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Bezpieczeństwo aplikacji webowych",
+          "Testowanie penetracyjne",
+          "Analiza złośliwego oprogramowania",
+          "Forensyka cyfrowa",
+          "Laboratorium hackingu etycznego"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Bezpieczeństwo infrastruktury IT",
+          "Zarządzanie incydentami bezpieczeństwa",
+          "Bezpieczeństwo chmury obliczeniowej",
+          "Audyt bezpieczeństwa",
+          "Reverse engineering"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Zaawansowane zagadnienia kryptografii",
+          "Bezpieczeństwo systemów przemysłowych",
+          "Aspekty prawne cyberbezpieczeństwa",
+          "Threat intelligence",
+          "Projekt zespołowy CTF"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Zarządzanie ryzykiem cyberbezpieczeństwa",
+          "Projekt dyplomowy",
+          "Seminarium dyplomowe",
+          "Normy i standardy bezpieczeństwa"
+        ]
+      }
+    ]
+  },
+  "Kulturoznawstwo": {
+    "faculty": "Wydział Humanistyczny",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do kulturoznawstwa",
+          "Historia kultury i cywilizacji",
+          "Podstawy teorii kultury",
+          "Metody badań humanistycznych",
+          "Seminarium wprowadzające"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Teorie kultury współczesnej",
+          "Kultura masowa i media",
+          "Antropologia kulturowa",
+          "Badania jakościowe w kulturoznawstwie",
+          "Kultura wizualna"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Kultury popularne",
+          "Pamięć kulturowa i tożsamość",
+          "Kulturoznawcze studia regionalne",
+          "Analiza dyskursu i semiotyka",
+          "Warsztat badawczy"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Kultura cyfrowa i media społecznościowe",
+          "Kultura a polityka",
+          "Etnografia kulturowa",
+          "Metody ilościowe w badaniach kultury",
+          "Projekt badawczy"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Kultura i globalizacja",
+          "Kultura materialna i muzeologia",
+          "Krytyka kultury i teoria krytyczna",
+          "Podstawy filmoznawstwa",
+          "Praktyka w instytucjach kultury"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Seminarium dyplomowe",
+          "Zarządzanie kulturą",
+          "Studia genderowe w kulturze",
+          "Przedmiot specjalizacyjny",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Psychologia": {
+    "faculty": "Wydział Humanistyczny",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do psychologii",
+          "Podstawy biologii",
+          "Metodologia badań psychologicznych I",
+          "Psychologia rozwojowa",
+          "Statystyka podstawowa dla psychologów"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Psychologia poznawcza",
+          "Psychologia osobowości",
+          "Metodologia badań psychologicznych II",
+          "Psychologia społeczna",
+          "Psychologia behawioralna"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Psychologia kliniczna",
+          "Psychometria i testy psychologiczne",
+          "Neuropsychologia",
+          "Psychologia rozwoju człowieka",
+          "Laboratorium statystyczne"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Interwencje psychologiczne i terapia",
+          "Psychologia zdrowia",
+          "Badania jakościowe w psychologii",
+          "Etyka w praktyce psychologa",
+          "Praktyka warsztatowa"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Psychologia pracy i organizacji",
+          "Diagnostyka psychologiczna",
+          "Psychologia społeczna zaawansowana",
+          "Praktyka w placówkach zdrowia psychicznego",
+          "Wybrane zagadnienia filozofii"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Seminarium z metodologii badań",
+          "Psychologia religii",
+          "Psychopatologia",
+          "Terapie poznawczo-behawioralne",
+          "Praktyka kliniczna"
+        ]
+      },
+      {
+        "semester": 7,
+        "courses": [
+          "Praca licencjacka",
+          "Seminarium dyplomowe",
+          "Praktyka kliniczna zaawansowana",
+          "Superwizja przypadków klinicznych"
+        ]
+      }
+    ]
+  },
+  "Filozofia": {
+    "faculty": "Wydział Humanistyczny",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do filozofii",
+          "Historia filozofii starożytnej i średniowiecznej",
+          "Logika i krytyczne myślenie",
+          "Podstawy etyki",
+          "Seminarium wprowadzające"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Historia filozofii nowożytnej",
+          "Epistemologia",
+          "Metodologia filozofii i argumentacja",
+          "Filozofia nauki",
+          "Warsztat interpretacyjny"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Filozofia polityczna i teoria społeczna",
+          "Metafizyka",
+          "Etyka normatywna i praktyczna",
+          "Filozofia języka",
+          "Seminarium tematyczne"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Filozofia umysłu i kognitywistyka",
+          "Estetyka i filozofia sztuki",
+          "Filozofia moralna zaawansowana",
+          "Historia filozofii XX wieku",
+          "Praca nad tekstem filozoficznym"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Filozofia polityki współczesnej",
+          "Filozofia religii",
+          "Filozofia etyki stosowanej",
+          "Fenomenologia i egzystencjalizm",
+          "Praktyka dydaktyczna"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Praca licencjacka",
+          "Seminarium dyplomowe",
+          "Filozofia w XXI wieku",
+          "Bioetyka",
+          "Filozofia technologii"
+        ]
+      }
+    ]
+  },
+  "Socjologia": {
+    "faculty": "Wydział Humanistyczny",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do socjologii",
+          "Historia myśli społecznej",
+          "Metodologia badań społecznych I",
+          "Psychologia społeczna",
+          "Statystyka dla socjologów"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Teorie socjologiczne klasyczne",
+          "Struktura społeczna i stratyfikacja",
+          "Metodologia badań społecznych II",
+          "Socjologia kultury",
+          "Analiza danych społecznych"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Teorie socjologiczne współczesne",
+          "Socjologia organizacji i zarządzania",
+          "Metody jakościowe w socjologii",
+          "Socjologia polityki",
+          "Socjologia rodziny i płci"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Socjologia edukacji",
+          "Socjologia miasta i przestrzeni",
+          "Ruchy społeczne i zmiana społeczna",
+          "Projektowanie badań społecznych",
+          "Antropologia społeczna"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Socjologia gospodarki i pracy",
+          "Socjologia mediów i komunikacji",
+          "Zaawansowane metody analizy danych",
+          "Projekt badawczy",
+          "Praktyka badawcza"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Socjologia globalizacji",
+          "Seminarium dyplomowe",
+          "Socjologia nierówności społecznych",
+          "Przedmiot specjalizacyjny",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Inżynieria mechaniczna": {
+    "faculty": "Wydział Inżynierii Mechanicznej i Robotyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Matematyka I",
+          "Fizyka I",
+          "Chemia ogólna",
+          "Geometria wykreślna i grafika inżynierska",
+          "Technologia informacyjna"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Matematyka II",
+          "Fizyka II",
+          "Mechanika teoretyczna I",
+          "Podstawy konstrukcji maszyn",
+          "Materiałoznawstwo"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Mechanika teoretyczna II",
+          "Wytrzymałość materiałów I",
+          "Termodynamika techniczna",
+          "Metrologia techniczna",
+          "Elektrotechnika i elektronika"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Wytrzymałość materiałów II",
+          "Mechanika płynów",
+          "Podstawy automatyki",
+          "Podstawy budowy maszyn",
+          "Technologie wytwarzania"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Projektowanie maszyn i urządzeń",
+          "Teoria mechanizmów i robotyki",
+          "Napędy i sterowanie hydrauliczne i pneumatyczne",
+          "CAD/CAM/CAE",
+          "Laboratorium technologii wytwarzania"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Eksploatacja maszyn i urządzeń",
+          "Metoda elementów skończonych",
+          "Przedmiot specjalizacyjny I",
+          "Przedmiot specjalizacyjny II",
+          "Ekonomika i zarządzanie produkcją"
+        ]
+      },
+      {
+        "semester": 7,
+        "courses": [
+          "Projekt inżynierski",
+          "Seminarium dyplomowe",
+          "Przedmiot specjalizacyjny III",
+          "Praktyka przemysłowa",
+          "Praca dyplomowa"
+        ]
+      }
+    ]
+  },
+  "Automatyka i robotyka": {
+    "faculty": "Wydział Inżynierii Mechanicznej i Robotyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Matematyka I",
+          "Fizyka techniczna",
+          "Podstawy elektrotechniki",
+          "Programowanie komputerów",
+          "Wprowadzenie do automatyki i robotyki"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Matematyka II",
+          "Elektronika analogowa i cyfrowa",
+          "Metrologia i systemy pomiarowe",
+          "Algorytmy i struktury danych",
+          "Mechanika i budowa maszyn"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Teoria sterowania I",
+          "Mikroprocesory i mikrokontrolery",
+          "Modelowanie i symulacja systemów",
+          "Napędy elektryczne",
+          "Sensory i przetworniki"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Teoria sterowania II",
+          "Systemy czasu rzeczywistego",
+          "Robotyka przemysłowa",
+          "Układy regulacji automatycznej",
+          "Cyfrowe systemy sterowania"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Programowanie systemów wbudowanych",
+          "Robotyka mobilna",
+          "Sztuczna inteligencja w automatyce",
+          "Systemy wizyjne i przetwarzanie obrazów",
+          "Projekt automatyki"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Zaawansowane systemy sterowania",
+          "Mechatronika",
+          "Systemy Industry 4.0",
+          "Programowanie robotów",
+          "Laboratorium robotyki"
+        ]
+      },
+      {
+        "semester": 7,
+        "courses": [
+          "Projekt dyplomowy",
+          "Seminarium dyplomowe",
+          "Zarządzanie projektami technicznymi",
+          "Przedmiot specjalizacyjny",
+          "Praca dyplomowa"
+        ]
+      }
+    ]
+  },
+  "Mechatronika": {
+    "faculty": "Wydział Inżynierii Mechanicznej i Robotyki",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Matematyka dla inżynierów I",
+          "Fizyka techniczna I",
+          "Podstawy elektrotechniki",
+          "Mechanika techniczna",
+          "Programowanie i algorytmika"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Matematyka dla inżynierów II",
+          "Fizyka techniczna II",
+          "Elektronika",
+          "Wytrzymałość materiałów",
+          "CAD i modelowanie 3D"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Systemy mechatroniczne",
+          "Napędy i przekładnie",
+          "Mikrokontrolery w mechatronice",
+          "Metrologia i pomiary",
+          "Materiały w mechatronice"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Układy sterowania w mechatronice",
+          "Pneumatyka i hydraulika",
+          "Systemy wbudowane",
+          "Projektowanie mechatroniczne",
+          "Systemy pomiarowe"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Robotyka i manipulatory",
+          "Układy napędowe i serwonapędy",
+          "Programowanie PLC",
+          "Wizja maszynowa",
+          "Projekt mechatroniczny I"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Zaawansowane systemy mechatroniczne",
+          "Diagnostyka systemów",
+          "Modelowanie i symulacja",
+          "Projekt mechatroniczny II",
+          "Seminarium dyplomowe"
+        ]
+      },
+      {
+        "semester": 7,
+        "courses": [
+          "Praca dyplomowa",
+          "Zarządzanie projektem mechatronicznym",
+          "Przedmiot specjalizacyjny",
+          "Praktyka przemysłowa"
+        ]
+      }
+    ]
+  },
+  "Zarządzanie": {
+    "faculty": "Wydział Zarządzania i Ekonomii",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Podstawy zarządzania",
+          "Mikroekonomia",
+          "Matematyka dla ekonomistów",
+          "Wprowadzenie do prawa",
+          "Technologie informacyjne w zarządzaniu"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Makroekonomia",
+          "Rachunkowość finansowa",
+          "Statystyka opisowa",
+          "Marketing podstawy",
+          "Zarządzanie zasobami ludzkimi"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Finanse przedsiębiorstw",
+          "Zarządzanie strategiczne",
+          "Badania rynku i zachowania konsumentów",
+          "Statystyka matematyczna",
+          "Prawo gospodarcze"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Rachunkowość zarządcza",
+          "Zarządzanie projektami",
+          "Marketing strategiczny",
+          "Zarządzanie operacyjne",
+          "Ekonometria"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Zarządzanie jakością",
+          "Controlling",
+          "Biznesplan i przedsiębiorczość",
+          "Negocjacje w biznesie",
+          "Przedmiot specjalizacyjny I"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Zarządzanie zmianą",
+          "Transformacja cyfrowa i E-biznes",
+          "Seminarium licencjackie",
+          "Przedmiot specjalizacyjny II",
+          "Praktyka zawodowa",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Ekonomia": {
+    "faculty": "Wydział Zarządzania i Ekonomii",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Mikroekonomia I",
+          "Matematyka I",
+          "Statystyka opisowa",
+          "Podstawy zarządzania",
+          "Historia myśli ekonomicznej"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Makroekonomia I",
+          "Matematyka II",
+          "Statystyka matematyczna",
+          "Rachunkowość",
+          "Teoria gier"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Mikroekonomia II",
+          "Makroekonomia II",
+          "Ekonometria I",
+          "Finanse publiczne",
+          "Prawo gospodarcze"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Ekonomia międzynarodowa",
+          "Ekonometria II",
+          "Polityka gospodarcza",
+          "Teoria wzrostu gospodarczego",
+          "Rynki finansowe"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Ekonomia behawioralna",
+          "Ekonomia instytucjonalna",
+          "Zaawansowane metody ilościowe",
+          "Projekt badawczy",
+          "Przedmiot specjalizacyjny I"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Współczesne teorie ekonomiczne",
+          "Seminarium licencjackie",
+          "Ekonomia rozwoju",
+          "Przedmiot specjalizacyjny II",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Finanse i rachunkowość": {
+    "faculty": "Wydział Zarządzania i Ekonomii",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Podstawy finansów",
+          "Rachunkowość finansowa I",
+          "Mikroekonomia",
+          "Matematyka finansowa I",
+          "Prawo cywilne i handlowe"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Rachunkowość finansowa II",
+          "Makroekonomia",
+          "Matematyka finansowa II",
+          "Statystyka",
+          "Finanse publiczne"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Rachunkowość zarządcza",
+          "Analiza finansowa",
+          "Rynki finansowe i instrumenty",
+          "Podatki i prawo podatkowe",
+          "Controlling"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Rachunkowość międzynarodowa",
+          "Zarządzanie finansami przedsiębiorstw",
+          "Bankowość i pośrednictwo finansowe",
+          "Rewizja finansowa",
+          "Wycena przedsiębiorstw"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Zaawansowana analiza finansowa",
+          "Zarządzanie ryzykiem finansowym",
+          "Inwestycje finansowe i zarządzanie portfelem",
+          "Systemy informatyczne w rachunkowości",
+          "Przedmiot specjalizacyjny I"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Finanse korporacyjne zaawansowane",
+          "Seminarium licencjackie",
+          "Sprawozdawczość finansowa",
+          "Przedmiot specjalizacyjny II",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Pielęgniarstwo": {
+    "faculty": "Wydział Nauk o Zdrowiu",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Anatomia człowieka",
+          "Fizjologia człowieka",
+          "Biochemia",
+          "Psychologia w pielęgniarstwie",
+          "Podstawy pielęgniarstwa"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Patofizjologia",
+          "Mikrobiologia i parazytologia",
+          "Farmakologia",
+          "Promocja zdrowia i edukacja zdrowotna",
+          "Pielęgniarstwo podstawowe"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Pielęgniarstwo internistyczne",
+          "Pielęgniarstwo chirurgiczne",
+          "Diagnostyka laboratoryjna",
+          "Żywienie kliniczne",
+          "Praktyka pielęgniarska I"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Pielęgniarstwo pediatryczne",
+          "Pielęgniarstwo położniczo-ginekologiczne",
+          "Opieka długoterminowa i geriatryczna",
+          "Badanie fizykalne",
+          "Praktyka pielęgniarska II"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Pielęgniarstwo psychiatryczne",
+          "Pielęgniarstwo w intensywnej opiece medycznej",
+          "Podstawy resuscytacji i pierwsza pomoc",
+          "Zarządzanie w pielęgniarstwie",
+          "Praktyka pielęgniarska III"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Pielęgniarstwo środowiskowe i rodzinne",
+          "Epidemiologia i kontrola zakażeń",
+          "Etyka i prawo w pielęgniarstwie",
+          "Komunikacja terapeutyczna",
+          "Praktyka pielęgniarska IV"
+        ]
+      },
+      {
+        "semester": 7,
+        "courses": [
+          "Badania naukowe w pielęgniarstwie",
+          "Seminarium dyplomowe",
+          "Praktyka zawodowa przedegzaminacyjna",
+          "Praca dyplomowa"
+        ]
+      }
+    ]
+  },
+  "Fizjoterapia": {
+    "faculty": "Wydział Nauk o Zdrowiu",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Anatomia narządu ruchu",
+          "Fizjologia człowieka",
+          "Kinezjologia",
+          "Podstawy fizjoterapii",
+          "Biomechanika"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Anatomia czynnościowa",
+          "Patologia narządu ruchu",
+          "Neurofizjologia",
+          "Masaż leczniczy",
+          "Fizykoterapia"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Fizjoterapia w ortopedii i traumatologii",
+          "Fizjoterapia w neurologiI",
+          "Kinezyterapia",
+          "Diagnostyka funkcjonalna",
+          "Praktyka kliniczna I"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Fizjoterapia w chorobach wewnętrznych",
+          "Fizjoterapia w geriatrii",
+          "Elektroterapia i laseroterapia",
+          "Terapia manualna",
+          "Praktyka kliniczna II"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Fizjoterapia w pediatrii",
+          "Fizjoterapia w sporcie",
+          "Hydroterapia i balneoterapia",
+          "Trening medyczny",
+          "Praktyka kliniczna III"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Fizjoterapia w ginekologii i położnictwie",
+          "Ergonomia i profilaktyka",
+          "Psychologia w rehabilitacji",
+          "Zarządzanie w fizjoterapii",
+          "Praktyka kliniczna IV"
+        ]
+      },
+      {
+        "semester": 7,
+        "courses": [
+          "Metody badawcze w fizjoterapii",
+          "Seminarium dyplomowe",
+          "Praktyka zawodowa",
+          "Praca dyplomowa"
+        ]
+      }
+    ]
+  },
+  "Zdrowie publiczne": {
+    "faculty": "Wydział Nauk o Zdrowiu",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Wprowadzenie do zdrowia publicznego",
+          "Podstawy nauk biomedycznych",
+          "Statystyka medyczna",
+          "Socjologia zdrowia",
+          "Promocja zdrowia"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Epidemiologia",
+          "Systemy ochrony zdrowia",
+          "Ekonomika zdrowia",
+          "Polityka zdrowotna",
+          "Metody badawcze w zdrowiu publicznym"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Epidemiologia chorób zakaźnych",
+          "Epidemiologia chorób niezakaźnych",
+          "Zarządzanie w ochronie zdrowia",
+          "Prawo medyczne",
+          "Edukacja zdrowotna"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Higiena i profilaktyka",
+          "Zdrowie środowiskowe",
+          "Biostatystyka zaawansowana",
+          "Ocena technologii medycznych",
+          "Projekt badawczy"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Planowanie i ewaluacja programów zdrowotnych",
+          "Zdrowie globalne",
+          "Nierówności w zdrowiu",
+          "Praktyka w instytucjach zdrowia publicznego",
+          "Przedmiot specjalizacyjny"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Zarządzanie kryzysowe w zdrowiu publicznym",
+          "Seminarium dyplomowe",
+          "Systemy informacji zdrowotnej",
+          "Komunikacja zdrowotna",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  },
+  "Biotechnologia": {
+    "faculty": "Wydział Nauk Biologicznych",
+    "semesters": [
+      {
+        "semester": 1,
+        "courses": [
+          "Chemia ogólna i nieorganiczna",
+          "Matematyka",
+          "Fizyka",
+          "Biologia komórki",
+          "Podstawy biotechnologii"
+        ]
+      },
+      {
+        "semester": 2,
+        "courses": [
+          "Chemia organiczna",
+          "Biochemia I",
+          "Mikrobiologia ogólna",
+          "Genetyka",
+          "Biologia molekularna"
+        ]
+      },
+      {
+        "semester": 3,
+        "courses": [
+          "Biochemia II",
+          "Inżynieria genetyczna",
+          "Mikrobiologia przemysłowa",
+          "Biofizyka",
+          "Techniki analityczne w biotechnologii"
+        ]
+      },
+      {
+        "semester": 4,
+        "courses": [
+          "Biotechnologia molekularna",
+          "Biotechnologia mikrobiologiczna",
+          "Immunologia",
+          "Bioinformatyka",
+          "Metody instrumentalne"
+        ]
+      },
+      {
+        "semester": 5,
+        "courses": [
+          "Biotechnologia medyczna",
+          "Biotechnologia przemysłowa",
+          "Inżynieria bioprocesowa",
+          "Bioreaktory i bioprocesy",
+          "Projekt biotechnologiczny"
+        ]
+      },
+      {
+        "semester": 6,
+        "courses": [
+          "Biotechnologia farmaceutyczna",
+          "Nanobiotechnologia",
+          "Bioetyka i prawo",
+          "Seminarium dyplomowe",
+          "Praca licencjacka"
+        ]
+      }
+    ]
+  }
+}

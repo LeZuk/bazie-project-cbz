@@ -24,9 +24,9 @@ CREATE DOMAIN name_t as varchar(128)
 -- I'm not sure how much it depends on stuff like locale/fonts/OS
 -- [:lower:] follows the same logic
 
--- as above but also allows for more other characters including whitespaces and numbers
+-- as above but also allows for more other characters including whitespaces and numbers and some special characters
 CREATE DOMAIN ext_name_t as varchar(128)
-    CHECK ( value ~ '^[[:alpha:]\s:0-9''-]+$');
+    CHECK ( value ~ '^[[:alpha:]\s:0-9''./-]+$');
 
 
 
