@@ -1,22 +1,44 @@
 
 BEGIN;
 
+--------------- DOMAINS ----------------
+
+-- WARNING: drop everything to allow seamless updating
+-- this can end horribly if one decides to import this file int a wrong DB
+DROP DOMAIN IF EXISTS email_t CASCADE;
+DROP DOMAIN IF EXISTS telephone_t CASCADE;
+DROP DOMAIN IF EXISTS sex_t CASCADE;
+DROP DOMAIN IF EXISTS name_t CASCADE;
+DROP DOMAIN IF EXISTS ext_name_t CASCADE;
+DROP TABLE IF EXISTS faculties CASCADE; 
+DROP TABLE IF EXISTS majors CASCADE; 
+DROP TABLE IF EXISTS courses CASCADE; 
+DROP TABLE IF EXISTS workers CASCADE; 
+DROP TABLE IF EXISTS students CASCADE; 
+DROP TABLE IF EXISTS groups CASCADE; 
+DROP TABLE IF EXISTS students_to_majors CASCADE; 
+DROP TABLE IF EXISTS students_to_groups CASCADE; 
+DROP TABLE IF EXISTS marks CASCADE;
+
 -- https://dba.stackexchange.com/questions/68266/what-is-the-best-way-to-store-an-email-address-in-postgresql
 -- I don't want to install the extensions so I'll just store is as pure lowercase
 -- trigger will be added later to automatically convert it to lowercase
 CREATE DOMAIN email_t AS varchar(128)
     CHECK ( value ~ '^[[:lower:]0-9.!#$%&''*+/=?^_`{|}~-]+@[[:lower:]0-9](?:[[:lower:]0-9-]{0,61}[[:lower:]0-9])?(?:\.[[:lower:]0-9](?:[[:lower:]0-9-]{0,61}[[:lower:]0-9])?)*$' );
 
+
 CREATE DOMAIN telephone_t as varchar(16)
     CHECK ( value  ~ '^\+?\d{10,14}$' );
 -- https://en.wikipedia.org/wiki/E.164
 -- same as above i just assume this format and I may add test later to convert from other formats into it
+
 
 CREATE DOMAIN sex_t as varchar(1)
     CHECK ( value IN ('M', 'F', 'O') );
 -- yet another trigger can be added to make allow for lowercase and maybe even convert from words like ('male' 'female' 'man', 'woman' etc.) into a single letter
 
 -- common type used for things likes names and surnames
+
 CREATE DOMAIN name_t as varchar(128)
     CHECK ( value ~ '^[[:alpha:]''-]+$');
 -- NOTE: I have tested using [:alpha:]   and suprisingly it worked for characters from various languages;
@@ -25,17 +47,20 @@ CREATE DOMAIN name_t as varchar(128)
 -- [:lower:] follows the same logic
 
 -- as above but also allows for more other characters including whitespaces and numbers and some special characters
+
 CREATE DOMAIN ext_name_t as varchar(128)
     CHECK ( value ~ '^[[:alpha:]\s:0-9''./-]+$');
 
 
 
--- Structure:
+--------------- TABLES ---------------
+
 CREATE TABLE faculties (
     faculty_id SERIAL PRIMARY KEY,
     name ext_name_t NOT NULL UNIQUE,
     dean_worker_id INTEGER NULL
 );
+
 
 CREATE TABLE majors (
     major_id SERIAL PRIMARY KEY,
@@ -44,6 +69,7 @@ CREATE TABLE majors (
         CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}$'),
     faculty_id INTEGER NOT NULL REFERENCES faculties(faculty_id) ON DELETE RESTRICT
 );
+
 
 CREATE TABLE courses (
     course_id SERIAL PRIMARY KEY,
@@ -54,6 +80,7 @@ CREATE TABLE courses (
     major_id INTEGER NOT NULL REFERENCES majors(major_id) ON delete CASCADE,
     ects_credits SMALLINT NOT NULL DEFAULT 1 
 );
+
 
 CREATE TABLE workers (
     worker_id SERIAL PRIMARY KEY,
@@ -67,6 +94,7 @@ CREATE TABLE workers (
 );
 
 
+
 CREATE TABLE students (
     student_id SERIAL PRIMARY KEY,
     first_name name_t NOT NULL,
@@ -75,6 +103,7 @@ CREATE TABLE students (
     email email_t NULL UNIQUE,
     sex sex_t NULL
 );
+
 
 CREATE TABLE groups (
     group_id SERIAL PRIMARY KEY,
@@ -89,12 +118,15 @@ CREATE TABLE groups (
     end_time TIME NOT NULL CHECK (end_time > start_time),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL CHECK (end_date >= start_date),
-    -- TODO: Add trigger to prevent overlapping schedules
     -- TODO: Add field that allows to mark whether the group meets every week or every second week (even or odd weeks) etc.
 
     CONSTRAINT working_hours
         CHECK (start_time >= '08:00' AND end_time <= '20:00')
 );
+-- adding this index because it may make triggers faster
+CREATE INDEX idx_groups_dates ON groups(start_date, end_date, day_of_week);
+
+
 
 -- many-to-many
 CREATE TABLE students_to_majors(
@@ -104,12 +136,16 @@ CREATE TABLE students_to_majors(
     PRIMARY KEY (student_id, major_id)
 );
 
+
 -- many-to-many
 CREATE TABLE students_to_groups(
     student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
     group_id INTEGER NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
     PRIMARY KEY (student_id, group_id)
 );
+-- adding this index because it may make triggers faster
+CREATE INDEX idx_students_to_groups_student_id ON students_to_groups(student_id);
+
 
 CREATE TABLE marks (
     mark_id SERIAL PRIMARY KEY,
@@ -121,9 +157,78 @@ CREATE TABLE marks (
     added DATE DEFAULT now() CHECK (added <= now())
 );
 
--- TODO:
--- - To ensure a student doesn’t join overlapping groups,
---   add trigger comparing (day_of_week, start_time, end_time).
--- - TO Calculate marks average efficiently, add a materialized view or index.
 
+--------------- FUNCTIONS & TRIGGERS ----------------
+
+CREATE OR REPLACE FUNCTION are_overlapping(
+    week_day1 SMALLINT, start_date1 DATE, end_date1 DATE, start_time1 TIME, end_time1 TIME, group_id1 INTEGER,
+    week_day2 SMALLINT, start_date2 DATE, end_date2 DATE, start_time2 TIME, end_time2 TIME, group_id2 INTEGER
+)
+RETURNS BOOLEAN AS $$
+BEGIN
+    RETURN (
+        week_day1 = week_day2 AND
+        start_date1 <= end_date2 AND start_date2 <= end_date1 AND
+        start_time1 <= end_time2 AND start_time2 <= end_time1 AND
+        group_id1 <> group_id2
+    );
+END;
+$$ LANGUAGE plpgsql;
+
+
+-- CREATE OR REPLACE FUNCTION trg_group_assignment()
+-- RETURNS TRIGGER AS $$
+-- DECLARE
+--     overlap_count INT;
+-- BEGIN
+-- 
+--     SELECT COUNT(*)
+--     INTO overlap_count
+--     FROM students_to_groups stg
+--     JOIN groups g1 ON stg.group_id = g1.group_id
+--     JOIN groups g2 ON g2.group_id = NEW.group_id
+--     WHERE stg.student_id = NEW.student_id AND
+--     are_overlapping(
+--           g1.day_of_week, g1.start_date, g1.end_date, g1.start_time, g1.end_time, g1.group_id,
+--           g2.day_of_week, g2.start_date, g2.end_date, g2.start_time, g2.end_time, g2.group_id
+--     );
+-- 
+--     RETURN NEW;
+-- END;
+-- $$ LANGUAGE plpgsql;
+
+-- Trigger function
+CREATE OR REPLACE FUNCTION trg_group_assignment()
+RETURNS TRIGGER AS $$
+BEGIN
+    -- If there is any overlapping assignment, raise an exception
+    IF EXISTS (
+        SELECT 1
+        FROM students_to_groups stg
+        JOIN groups g1 ON stg.group_id = g1.group_id
+        JOIN groups g2 ON g2.group_id = NEW.group_id
+        WHERE stg.student_id = NEW.student_id
+          AND g1.group_id <> g2.group_id
+          AND g1.day_of_week = g2.day_of_week
+          AND g1.start_date <= g2.end_date
+          AND g1.end_date >= g2.start_date
+          AND g1.start_time <= g2.end_time
+          AND g1.end_time >= g2.start_time
+    ) THEN
+        RAISE EXCEPTION 'Student % has a conflicting group assignment', NEW.student_id;
+    END IF;
+
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER group_assignment_trigger
+BEFORE INSERT on students_to_groups
+FOR EACH ROW
+EXECUTE FUNCTION trg_group_assignment();
+
+
+
+-- TODO:
+-- - TO Calculate marks average efficiently, add a materialized view or index.
 COMMIT;
