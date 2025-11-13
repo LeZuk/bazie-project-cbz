@@ -75,7 +75,7 @@ CREATE TABLE courses (
     course_id SERIAL PRIMARY KEY,
     code VARCHAR(16) NOT NULL UNIQUE
         CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}$'),
-        -- I assume that it will be extended major code
+        -- This will be extended major code
     title ext_name_t NOT NULL,
     major_id INTEGER NOT NULL REFERENCES majors(major_id) ON delete CASCADE,
     ects_credits SMALLINT NOT NULL DEFAULT 1 
@@ -119,12 +119,13 @@ CREATE TABLE groups (
     start_date DATE NOT NULL,
     end_date DATE NOT NULL CHECK (end_date >= start_date),
     -- TODO: Add field that allows to mark whether the group meets every week or every second week (even or odd weeks) etc.
-
     CONSTRAINT working_hours
         CHECK (start_time >= '08:00' AND end_time <= '20:00')
 );
+
 -- adding this index because it may make triggers faster
 CREATE INDEX idx_groups_dates ON groups(start_date, end_date, day_of_week);
+CREATE INDEX idx_groups_lookup ON groups(group_id);
 
 
 
@@ -160,60 +161,26 @@ CREATE TABLE marks (
 
 --------------- FUNCTIONS & TRIGGERS ----------------
 
-CREATE OR REPLACE FUNCTION are_overlapping(
-    week_day1 SMALLINT, start_date1 DATE, end_date1 DATE, start_time1 TIME, end_time1 TIME, group_id1 INTEGER,
-    week_day2 SMALLINT, start_date2 DATE, end_date2 DATE, start_time2 TIME, end_time2 TIME, group_id2 INTEGER
-)
-RETURNS BOOLEAN AS $$
-BEGIN
-    RETURN (
-        week_day1 = week_day2 AND
-        start_date1 <= end_date2 AND start_date2 <= end_date1 AND
-        start_time1 <= end_time2 AND start_time2 <= end_time1 AND
-        group_id1 <> group_id2
-    );
-END;
-$$ LANGUAGE plpgsql;
 
-
--- CREATE OR REPLACE FUNCTION trg_group_assignment()
--- RETURNS TRIGGER AS $$
--- DECLARE
---     overlap_count INT;
--- BEGIN
--- 
---     SELECT COUNT(*)
---     INTO overlap_count
---     FROM students_to_groups stg
---     JOIN groups g1 ON stg.group_id = g1.group_id
---     JOIN groups g2 ON g2.group_id = NEW.group_id
---     WHERE stg.student_id = NEW.student_id AND
---     are_overlapping(
---           g1.day_of_week, g1.start_date, g1.end_date, g1.start_time, g1.end_time, g1.group_id,
---           g2.day_of_week, g2.start_date, g2.end_date, g2.start_time, g2.end_time, g2.group_id
---     );
--- 
---     RETURN NEW;
--- END;
--- $$ LANGUAGE plpgsql;
-
--- Trigger function
+-- NOTE: I don't know how to make this more efficient
+--       when doing bulk inserts (like 16K) it's gonna take a while
 CREATE OR REPLACE FUNCTION trg_group_assignment()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- If there is any overlapping assignment, raise an exception
+    -- if there is any overlapping assignment, raise an exception
     IF EXISTS (
         SELECT 1
         FROM students_to_groups stg
         JOIN groups g1 ON stg.group_id = g1.group_id
         JOIN groups g2 ON g2.group_id = NEW.group_id
         WHERE stg.student_id = NEW.student_id
-          AND g1.group_id <> g2.group_id
-          AND g1.day_of_week = g2.day_of_week
-          AND g1.start_date <= g2.end_date
-          AND g1.end_date >= g2.start_date
-          AND g1.start_time <= g2.end_time
-          AND g1.end_time >= g2.start_time
+            AND g1.group_id <> g2.group_id
+            AND (TG_OP = 'INSERT' OR g1.group_id <> OLD.group_id) -- we want to be able to replace group with another group (even though that they technically overlap)
+            AND g1.day_of_week = g2.day_of_week
+            AND g1.start_date <= g2.end_date
+            AND g1.end_date >= g2.start_date
+            AND g1.start_time <= g2.end_time
+            AND g1.end_time >= g2.start_time
     ) THEN
         RAISE EXCEPTION 'Student % has a conflicting group assignment', NEW.student_id;
     END IF;
@@ -223,11 +190,39 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER group_assignment_trigger
-BEFORE INSERT on students_to_groups
+BEFORE INSERT OR UPDATE on students_to_groups
 FOR EACH ROW
 EXECUTE FUNCTION trg_group_assignment();
 
 
+
+CREATE OR REPLACE FUNCTION trg_instructor_assignment()
+RETURNS TRIGGER AS $$
+BEGIN
+    IF EXISTS (
+        SELECT 1 
+        FROM groups g
+        WHERE g.instructor_worker_id = NEW.instructor_worker_id
+        AND NEW.instructor_worker_id = NEW.instructor_worker_id
+        AND g.day_of_week = NEW.day_of_week
+        AND g.start_date <= NEW.end_date
+        AND g.end_date >= NEW.start_date
+        AND g.start_time <= NEW.end_time
+        AND g.end_time >= NEW.start_time 
+        AND g.group_id <> COALESCE(NEW.group_id, -1)
+    ) THEN
+        RAISE EXCEPTION 'Instructor % has a conflicting group assignment', NEW.instructor_worker_id;
+    END IF;
+
+    RETURN NEW;
+
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE TRIGGER instructor_assignment_trigger
+BEFORE INSERT OR UPDATE on groups
+FOR EACH ROW
+EXECUTE FUNCTION trg_instructor_assignment();
 
 -- TODO:
 -- - TO Calculate marks average efficiently, add a materialized view or index.
