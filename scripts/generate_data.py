@@ -15,7 +15,7 @@ import random
 
 random.seed(12345)
 
-# Parameters that can be adjusted to change generation rules; They not always as starting forward as their name might suggest
+# Parameters that can be adjusted to change generation rules; They not always as straight forward as their name might suggest
 
 FILES = ["input/m_names.csv", "input/f_names.csv", "input/m_lastnames.csv", "input/f_lastnames.csv"]
 MAJORS_PATH = "input/majors.json"
@@ -41,25 +41,19 @@ QUAD_MAJOR_CHANCE = 0.006
 
 EMAIL_DOMAIN = "agh.edu.pl"
 USED_DAYS = [1, 2, 3, 4, 5]
-START_DATES = [ datetime(2025, 10, 1),
-                datetime(2025, 11, 1),
-                datetime(2025, 12, 1),
-                datetime(2026,  1, 1),
-                datetime(2026,  2, 1),
-                datetime(2026,  3, 1),
-                datetime(2026,  4, 1),
-                datetime(2026,  5, 1),
-                datetime(2026,  6, 1) ]
+START_DATES = [ 
+    datetime(2025, 10, 1),
+    datetime(2025, 11, 1),
+    datetime(2026,  3, 1),
+    datetime(2026,  4, 1),
+]
 
-END_DATES = [ datetime(2025, 10, 31),
-                datetime(2025, 11, 30),
-                datetime(2025, 12, 31),
-                datetime(2026,  1, 31),
-                datetime(2026,  2, 28),
-                datetime(2026,  3, 31),
-                datetime(2026,  4, 30),
-                datetime(2026,  5, 31),
-                datetime(2026,  6, 30) ]
+END_DATES = [   
+    datetime(2026,  1, 31),
+    datetime(2026,  2, 28),
+    datetime(2026,  5, 31),
+    datetime(2026,  6, 30) 
+]
 
 # Class that stores generation of some unique values like emails and phone numbers
 # @dataclass is used to automatically create some useful methods like __init__

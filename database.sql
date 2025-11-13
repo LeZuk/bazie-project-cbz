@@ -1,10 +1,9 @@
-
 BEGIN;
 
---------------- DOMAINS ----------------
+--------------- DROPS ----------------
 
 -- WARNING: drop everything to allow seamless updating
--- this can end horribly if one decides to import this file int a wrong DB
+-- this can end horribly if one decides to import this file in a wrong DB
 DROP DOMAIN IF EXISTS email_t CASCADE;
 DROP DOMAIN IF EXISTS telephone_t CASCADE;
 DROP DOMAIN IF EXISTS sex_t CASCADE;
@@ -20,25 +19,26 @@ DROP TABLE IF EXISTS students_to_majors CASCADE;
 DROP TABLE IF EXISTS students_to_groups CASCADE; 
 DROP TABLE IF EXISTS marks CASCADE;
 
+
+
+--------------- DOMAINS ----------------
+
 -- https://dba.stackexchange.com/questions/68266/what-is-the-best-way-to-store-an-email-address-in-postgresql
--- I don't want to install the extensions so I'll just store is as pure lowercase
--- trigger will be added later to automatically convert it to lowercase
+-- there's also a tigger that converts emails to lowercase
 CREATE DOMAIN email_t AS varchar(128)
-    CHECK ( value ~ '^[[:lower:]0-9.!#$%&''*+/=?^_`{|}~-]+@[[:lower:]0-9](?:[[:lower:]0-9-]{0,61}[[:lower:]0-9])?(?:\.[[:lower:]0-9](?:[[:lower:]0-9-]{0,61}[[:lower:]0-9])?)*$' );
+    CHECK ( value ~ '^[[:alpha:]0-9.!#$%&''*+/=?^_`{|}~-]+@[[:alpha:]0-9](?:[[:alpha:]0-9-]{0,61}[[:alpha:]0-9])?(?:\.[[:alpha:]0-9](?:[[:alpha:]0-9-]{0,61}[[:alpha:]0-9])?)*$' );
 
 
-CREATE DOMAIN telephone_t as varchar(16)
-    CHECK ( value  ~ '^\+?\d{10,14}$' );
--- https://en.wikipedia.org/wiki/E.164
--- same as above i just assume this format and I may add test later to convert from other formats into it
+-- permissive regex that will be converted to suitble format later
+CREATE DOMAIN telephone_t as varchar(32)
+    CHECK ( value  ~ '^\+?[0-9\s\-\(\)]{7,20}$' );
 
 
 CREATE DOMAIN sex_t as varchar(1)
-    CHECK ( value IN ('M', 'F', 'O') );
--- yet another trigger can be added to make allow for lowercase and maybe even convert from words like ('male' 'female' 'man', 'woman' etc.) into a single letter
+    CHECK ( value IN ('M', 'F', 'O', 'm', 'f', 'o') );
+
 
 -- common type used for things likes names and surnames
-
 CREATE DOMAIN name_t as varchar(128)
     CHECK ( value ~ '^[[:alpha:]''-]+$');
 -- NOTE: I have tested using [:alpha:]   and suprisingly it worked for characters from various languages;
@@ -47,7 +47,6 @@ CREATE DOMAIN name_t as varchar(128)
 -- [:lower:] follows the same logic
 
 -- as above but also allows for more other characters including whitespaces and numbers and some special characters
-
 CREATE DOMAIN ext_name_t as varchar(128)
     CHECK ( value ~ '^[[:alpha:]\s:0-9''./-]+$');
 
@@ -58,9 +57,9 @@ CREATE DOMAIN ext_name_t as varchar(128)
 CREATE TABLE faculties (
     faculty_id SERIAL PRIMARY KEY,
     name ext_name_t NOT NULL UNIQUE,
-    dean_worker_id INTEGER NULL
+    dean_worker_id INTEGER UNIQUE NULL
+    -- TODO: add check if dean belongs to the faculty
 );
-
 
 CREATE TABLE majors (
     major_id SERIAL PRIMARY KEY,
@@ -104,12 +103,10 @@ CREATE TABLE students (
     sex sex_t NULL
 );
 
-
 CREATE TABLE groups (
     group_id SERIAL PRIMARY KEY,
     course_id INTEGER NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
     instructor_worker_id INTEGER NOT NULL REFERENCES workers(worker_id) ON DELETE SET NULL,
-    -- TODO: Add trigger so that if worker is assigned to group teaching is set to true
     code VARCHAR(32) NOT NULL UNIQUE
         CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}$'),
         -- I assume that it will be extended course code
@@ -118,16 +115,13 @@ CREATE TABLE groups (
     end_time TIME NOT NULL CHECK (end_time > start_time),
     start_date DATE NOT NULL,
     end_date DATE NOT NULL CHECK (end_date >= start_date),
-    -- TODO: Add field that allows to mark whether the group meets every week or every second week (even or odd weeks) etc.
     CONSTRAINT working_hours
         CHECK (start_time >= '08:00' AND end_time <= '20:00')
 );
 
--- adding this index because it may make triggers faster
+-- adding this index because it may make some triggers faster
 CREATE INDEX idx_groups_dates ON groups(start_date, end_date, day_of_week);
 CREATE INDEX idx_groups_lookup ON groups(group_id);
-
-
 
 -- many-to-many
 CREATE TABLE students_to_majors(
@@ -137,23 +131,20 @@ CREATE TABLE students_to_majors(
     PRIMARY KEY (student_id, major_id)
 );
 
-
 -- many-to-many
 CREATE TABLE students_to_groups(
     student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
     group_id INTEGER NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
     PRIMARY KEY (student_id, group_id)
 );
--- adding this index because it may make triggers faster
+-- adding this index because it also may make some triggers faster
 CREATE INDEX idx_students_to_groups_student_id ON students_to_groups(student_id);
-
 
 CREATE TABLE marks (
     mark_id SERIAL PRIMARY KEY,
     student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
     course_id INTEGER NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
-    -- TODO: Add trigger to check if student belongs to the course
-    mark SMALLINT NOT NULL CHECK (mark >= 2 AND mark <= 5),
+    mark SMALLINT NOT NULL CHECK (mark >= 1 AND mark <= 5),
     weight SMALLINT DEFAULT 1 CHECK (weight > 0),
     added DATE DEFAULT now() CHECK (added <= now())
 );
@@ -161,7 +152,7 @@ CREATE TABLE marks (
 
 --------------- FUNCTIONS & TRIGGERS ----------------
 
-
+-- Check for overlapping groups
 -- NOTE: I don't know how to make this more efficient
 --       when doing bulk inserts (like 16K) it's gonna take a while
 CREATE OR REPLACE FUNCTION trg_group_assignment()
@@ -195,8 +186,9 @@ FOR EACH ROW
 EXECUTE FUNCTION trg_group_assignment();
 
 
-
-CREATE OR REPLACE FUNCTION trg_instructor_assignment()
+-- check for instructors group assignment overlap
+-- also change teaching to true or false if needed
+CREATE OR REPLACE FUNCTION trg_instructor_overlap()
 RETURNS TRIGGER AS $$
 BEGIN
     IF EXISTS (
@@ -213,17 +205,179 @@ BEGIN
     ) THEN
         RAISE EXCEPTION 'Instructor % has a conflicting group assignment', NEW.instructor_worker_id;
     END IF;
-
     RETURN NEW;
 
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE OR REPLACE FUNCTION trg_instructor_teaching()
+RETURNS TRIGGER AS $$
+BEGIN
+    UPDATE workers SET teaching = TRUE WHERE worker_id = NEW.instructor_worker_id;
+    IF (TG_OP = 'UPDATE' AND NOT EXISTS (SELECT 1 FROM groups g WHERE instructor_worker_id = OLD.instructor_worker_id) ) THEN
+        UPDATE workers SET teaching = FALSE WHERE worker_id = OLD.instructor_worker_id;
+    END IF;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER instructor_assignment_trigger
 BEFORE INSERT OR UPDATE on groups
 FOR EACH ROW
-EXECUTE FUNCTION trg_instructor_assignment();
+EXECUTE FUNCTION trg_instructor_overlap();
 
--- TODO:
--- - TO Calculate marks average efficiently, add a materialized view or index.
+CREATE OR REPLACE TRIGGER instructor_teaching_trigger
+AFTER INSERT OR UPDATE on groups
+FOR EACH ROW
+EXECUTE FUNCTION trg_instructor_teaching();
+
+
+-- convert email_t to lowercase
+CREATE OR REPLACE FUNCTION convert_email_to_lower()
+RETURNS trigger AS $$
+BEGIN
+    NEW.email := lower(NEW.email);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_email_students
+BEFORE INSERT OR UPDATE OF email ON students
+FOR EACH ROW
+EXECUTE FUNCTION convert_email_to_lower();
+
+CREATE TRIGGER trg_email_workers
+BEFORE INSERT OR UPDATE OF email ON workers
+FOR EACH ROW
+EXECUTE FUNCTION convert_email_to_lower();
+
+
+
+-- https://en.wikipedia.org/wiki/E.164
+-- convert telephone_t to E.164
+-- it's not perfect but will work for things like '123 123 123'
+CREATE OR REPLACE FUNCTION normalize_phone()
+RETURNS trigger AS $$
+DECLARE
+    cleaned varchar(32);
+BEGIN
+    cleaned := regexp_replace(NEW.telephone, '[^0-9+]', '', 'g');
+    IF cleaned LIKE '+%' THEN
+        RETURN NEW;
+    END IF;
+    NEW.telephone := '+48' || cleaned;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_telephone_students
+BEFORE INSERT OR UPDATE OF telephone ON students
+FOR EACH ROW
+EXECUTE FUNCTION normalize_phone();
+
+CREATE TRIGGER trg_telephone_workers
+BEFORE INSERT OR UPDATE OF telephone ON workers
+FOR EACH ROW
+EXECUTE FUNCTION normalize_phone();
+
+
+-- convert sex_t to lowercase
+CREATE OR REPLACE FUNCTION convert_sex_to_lower()
+RETURNS trigger AS $$
+BEGIN
+    NEW.sex := lower(NEW.sex);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_sex_workers
+BEFORE INSERT OR UPDATE OF sex ON workers
+FOR EACH ROW
+EXECUTE FUNCTION convert_sex_to_lower();
+
+CREATE TRIGGER trg_sex_students
+BEFORE INSERT OR UPDATE OF sex ON students
+FOR EACH ROW
+EXECUTE FUNCTION convert_sex_to_lower();
+
+
+-- check if student belongs to a course before adding a new mark
+CREATE OR REPLACE FUNCTION check_course_belonging()
+RETURNS trigger AS $$
+BEGIN
+    IF NOT EXISTS (
+        SELECT 1
+        FROM students_to_groups
+        JOIN groups USING(group_id)
+        WHERE student_id = NEW.student_id
+          AND course_id = NEW.course_id
+    ) THEN
+        RAISE EXCEPTION 'student % is not assigned to course %', NEW.student_id, NEW.course_id;
+    END IF;
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_marks_course
+BEFORE INSERT OR UPDATE ON marks
+FOR EACH ROW
+EXECUTE FUNCTION check_course_belonging();
+
+
+--------------- VIEWS ----------------
+
+
+CREATE OR REPLACE /* MATERIALIZED */ VIEW students_gpa AS
+SELECT std.student_id AS "student_id", std.first_name || ' ' || std.last_name AS "student_name", maj.name AS "major", 
+ROUND((SUM(mar.mark * mar.weight) * 1.0) / SUM(mar.weight),2) AS "srednia"
+FROM students std 
+JOIN students_to_groups stg ON std.student_id = stg.student_id
+JOIN groups g ON stg.group_id = g.group_id
+JOIN courses c ON g.course_id = c.course_id
+JOIN marks mar ON mar.student_id = std.student_id AND mar.course_id = c.course_id
+JOIN students_to_majors stm ON std.student_id = stm.student_id AND stm.major_id = c.major_id
+JOIN majors maj ON maj.major_id = stm.major_id
+GROUP BY std.student_id, std.first_name, std.last_name, maj.name ORDER BY student_id;
+
+
+CREATE OR REPLACE VIEW courses_overview AS
+SELECT  f.faculty_id AS "faculty_id" , f.name AS "faculty", 
+        m.major_id AS "major_id", m.name AS "major", 
+        c.course_id as "course_id", c.title AS "course", c.ects_credits AS "ects"
+FROM courses c 
+JOIN majors m ON m.major_id = c.major_id
+JOIN faculties f ON f.faculty_id = m.faculty_id
+ORDER BY f.faculty_id, m.major_id, c.course_id;
+
+CREATE OR REPLACE VIEW student_overview AS
+SELECT
+    s.student_id,
+    s.first_name || ' ' || s.last_name AS name,
+    COUNT(DISTINCT stg.group_id) AS "total_groups",
+    COUNT(DISTINCT m.mark_id) AS "total_marks",
+    -- total study hours (sum for all groups considering each group's duration)
+    ROUND(SUM(
+        (EXTRACT(EPOCH FROM (g.end_time - g.start_time)) / 3600.0)
+        * ((g.end_date - g.start_date) / 7.0)::INTEGER
+    ), 2) AS "total_semester_hours",
+    -- weighted average mark
+    ROUND((SUM(m.mark * m.weight)::NUMERIC / NULLIF(SUM(m.weight), 0)::NUMERIC), 2) AS "avg_mark"
+FROM students s
+LEFT JOIN students_to_groups stg ON s.student_id = stg.student_id
+LEFT JOIN groups g ON stg.group_id = g.group_id
+LEFT JOIN marks m ON m.student_id = s.student_id
+GROUP BY s.student_id, name;
+
+CREATE OR REPLACE VIEW instructor_overview AS
+SELECT
+    w.worker_id AS "worker_id", w.first_name || ' ' || w.last_name AS "worker",
+    COUNT(DISTINCT g.group_id) AS "total_groups",
+    ROUND(SUM(
+        (EXTRACT(EPOCH FROM (g.end_time - g.start_time)) / 3600.0)
+        * ((g.end_date - g.start_date) / 7.0)::INTEGER
+    ), 2) AS "total_semester_hours"
+FROM workers w
+LEFT JOIN groups g ON w.worker_id = g.instructor_worker_id
+GROUP BY w.worker_id, w.first_name, w.last_name;
+
 COMMIT;
