@@ -349,25 +349,6 @@ JOIN majors m ON m.major_id = c.major_id
 JOIN faculties f ON f.faculty_id = m.faculty_id
 ORDER BY f.faculty_id, m.major_id, c.course_id;
 
-CREATE OR REPLACE VIEW student_overview AS
-SELECT
-    s.student_id,
-    s.first_name || ' ' || s.last_name AS name,
-    COUNT(DISTINCT stg.group_id) AS "total_groups",
-    COUNT(DISTINCT m.mark_id) AS "total_marks",
-    -- total study hours (sum for all groups considering each group's duration)
-    ROUND(SUM(
-        (EXTRACT(EPOCH FROM (g.end_time - g.start_time)) / 3600.0)
-        * ((g.end_date - g.start_date) / 7.0)::INTEGER
-    ), 2) AS "total_semester_hours",
-    -- weighted average mark
-    ROUND((SUM(m.mark * m.weight)::NUMERIC / NULLIF(SUM(m.weight), 0)::NUMERIC), 2) AS "avg_mark"
-FROM students s
-LEFT JOIN students_to_groups stg ON s.student_id = stg.student_id
-LEFT JOIN groups g ON stg.group_id = g.group_id
-LEFT JOIN marks m ON m.student_id = s.student_id
-GROUP BY s.student_id, name;
-
 CREATE OR REPLACE VIEW instructor_overview AS
 SELECT
     w.worker_id AS "worker_id", w.first_name || ' ' || w.last_name AS "worker",
@@ -379,5 +360,40 @@ SELECT
 FROM workers w
 LEFT JOIN groups g ON w.worker_id = g.instructor_worker_id
 GROUP BY w.worker_id, w.first_name, w.last_name;
+
+CREATE OR REPLACE VIEW student_overview AS
+SELECT
+    s.student_id AS "student_id",
+    s.first_name || ' ' || s.last_name AS "student",
+    COALESCE(gdata.total_groups, 0) AS "total_groups",
+    COALESCE(mdata.total_marks, 0) AS "total_marks",
+    COALESCE(gdata.total_semester_hours, 0) AS "total_semester_hours",
+    ROUND(mdata.avg_mark, 2) AS "avg_mark"
+FROM students s
+LEFT JOIN (
+    -- Calculate total groups and hours
+    SELECT
+        stg.student_id,
+        COUNT(DISTINCT stg.group_id) AS total_groups,
+        ROUND(SUM(
+            (EXTRACT(EPOCH FROM (g.end_time - g.start_time)) / 3600.0)
+            * ((g.end_date - g.start_date) / 7.0)
+        ), 2) AS total_semester_hours
+    FROM students_to_groups stg
+    JOIN groups g ON stg.group_id = g.group_id
+    GROUP BY stg.student_id
+) gdata ON gdata.student_id = s.student_id
+LEFT JOIN (
+    -- Calculate marks summary
+    SELECT
+        m.student_id,
+        COUNT(m.mark_id) AS total_marks,
+        SUM(m.mark * m.weight)::NUMERIC / NULLIF(SUM(m.weight), 0) AS avg_mark
+    FROM marks m
+    GROUP BY m.student_id
+) mdata ON mdata.student_id = s.student_id;
+
+
+
 
 COMMIT;
