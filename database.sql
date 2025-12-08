@@ -76,7 +76,7 @@ CREATE TABLE courses (
         CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}$'),
         -- This will be extended major code
     title ext_name_t NOT NULL,
-    major_id INTEGER NOT NULL REFERENCES majors(major_id) ON delete CASCADE,
+    major_id INTEGER NOT NULL REFERENCES majors(major_id) ON DELETE CASCADE,
     ects_credits SMALLINT NOT NULL DEFAULT 1 
 );
 
@@ -181,7 +181,7 @@ END;
 $$ LANGUAGE plpgsql;
 
 CREATE OR REPLACE TRIGGER group_assignment_trigger
-BEFORE INSERT OR UPDATE on students_to_groups
+BEFORE INSERT OR UPDATE ON students_to_groups
 FOR EACH ROW
 EXECUTE FUNCTION trg_group_assignment();
 
@@ -301,7 +301,6 @@ FOR EACH ROW
 EXECUTE FUNCTION convert_sex_to_lower();
 
 
--- check if student belongs to a course before adding a new mark
 CREATE OR REPLACE FUNCTION check_course_belonging()
 RETURNS trigger AS $$
 BEGIN
@@ -322,6 +321,44 @@ CREATE TRIGGER trg_marks_course
 BEFORE INSERT OR UPDATE ON marks
 FOR EACH ROW
 EXECUTE FUNCTION check_course_belonging();
+
+
+CREATE OR REPLACE FUNCTION student_schedule (p_student_id INT)
+RETURNS TABLE(
+    time_slot VARCHAR(128),
+    monday VARCHAR(128),
+    tuesday VARCHAR(128),
+    wednesday VARCHAR(128),
+    thursday VARCHAR(128),
+    friday VARCHAR(128)
+)
+AS $$
+    SELECT 
+        t.start_time || ' - ' || t.end_time AS time_slot,
+        MAX(CASE WHEN s.day_of_week = 1 THEN s.title || ' (' || substring(s.code,17,1) || ')'  END) AS monday,
+        MAX(CASE WHEN s.day_of_week = 2 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS tuesday,
+        MAX(CASE WHEN s.day_of_week = 3 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS wednesday,
+        MAX(CASE WHEN s.day_of_week = 4 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS thursday,
+        MAX(CASE WHEN s.day_of_week = 5 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS friday
+
+    FROM (
+        SELECT DISTINCT day_of_week, start_time, end_time
+        FROM groups
+    ) t
+    LEFT JOIN (
+        SELECT day_of_week, start_time, end_time, title, groups.code as code
+        FROM students
+        JOIN students_to_groups USING(student_id)
+        JOIN groups USING(group_id)
+        JOIN courses USING(course_id)
+        WHERE student_id = p_student_id
+    ) s
+    ON t.day_of_week = s.day_of_week
+    AND t.start_time = s.start_time
+
+    GROUP BY t.start_time, t.end_time
+    ORDER BY t.start_time;
+$$ LANGUAGE sql STABLE;
 
 
 --------------- VIEWS ----------------
@@ -349,7 +386,7 @@ JOIN majors m ON m.major_id = c.major_id
 JOIN faculties f ON f.faculty_id = m.faculty_id
 ORDER BY f.faculty_id, m.major_id, c.course_id;
 
-CREATE OR REPLACE VIEW instructor_overview AS
+CREATE OR REPLACE VIEW worker_overview AS
 SELECT
     w.worker_id AS "worker_id", w.first_name || ' ' || w.last_name AS "worker",
     COUNT(DISTINCT g.group_id) AS "total_groups",
@@ -368,10 +405,10 @@ SELECT
     COALESCE(gdata.total_groups, 0) AS "total_groups",
     COALESCE(mdata.total_marks, 0) AS "total_marks",
     COALESCE(gdata.total_semester_hours, 0) AS "total_semester_hours",
+    (SELECT COUNT(*) FROM students_to_majors WHERE student_id = s.student_id) as "total_majors",
     ROUND(mdata.avg_mark, 2) AS "avg_mark"
 FROM students s
 LEFT JOIN (
-    -- Calculate total groups and hours
     SELECT
         stg.student_id,
         COUNT(DISTINCT stg.group_id) AS total_groups,
@@ -384,7 +421,6 @@ LEFT JOIN (
     GROUP BY stg.student_id
 ) gdata ON gdata.student_id = s.student_id
 LEFT JOIN (
-    -- Calculate marks summary
     SELECT
         m.student_id,
         COUNT(m.mark_id) AS total_marks,

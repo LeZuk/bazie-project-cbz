@@ -13,7 +13,7 @@ import math
 import random
 
 
-random.seed(12345)
+random.seed(123456)
 
 # Parameters that can be adjusted to change generation rules; They not always as straight forward as their name might suggest
 
@@ -29,15 +29,15 @@ NULL_SEX_CHANCE = 0.01
 NULL_WORKER_FACULTY_CHANCE = 0.25
 
 STUDENT_DECAY = [1.0, 0.85, 0.80, 0.80, 0.75, 0.70, 0.65]
-MAJOR_SIZES = ([45, 60, 100, 120, 150, 200], [0.15, 0.15, 0.25, 0.25, 0.1, 0.1])
+MAJOR_SIZES = ([45, 60, 100, 120, 150, 200], [0.10, 0.15, 0.25, 0.25, 0.1, 0.15])
 ECTS_DISTRIBUTION =(
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
     [0.02, 0.03, 0.1, 0.2, 0.25, 0.25, 0.05, 0.05, 0.03, 0.02]
 )
 
-DOUBLE_MAJOR_CHANCE = 0.07
-TRIPLE_MAJOR_CHANCE = 0.02
-QUAD_MAJOR_CHANCE = 0.006
+DOUBLE_MAJOR_CHANCE = 0.15
+TRIPLE_MAJOR_CHANCE = 0.01
+QUAD_MAJOR_CHANCE = 0.001
 
 EMAIL_DOMAIN = "agh.edu.pl"
 USED_DAYS = [1, 2, 3, 4, 5]
