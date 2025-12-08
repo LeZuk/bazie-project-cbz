@@ -352,11 +352,12 @@ AS $$
         JOIN groups USING(group_id)
         JOIN courses USING(course_id)
         WHERE student_id = p_student_id
+        AND now() BETWEEN start_date AND end_date
     ) s
     ON t.day_of_week = s.day_of_week
     AND t.start_time = s.start_time
 
-    GROUP BY t.start_time, t.end_time
+GROUP BY t.start_time, t.end_time
     ORDER BY t.start_time;
 $$ LANGUAGE sql STABLE;
 
@@ -433,3 +434,24 @@ LEFT JOIN (
 
 
 COMMIT;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
