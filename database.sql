@@ -42,7 +42,7 @@ CREATE DOMAIN sex_t as varchar(1)
 CREATE DOMAIN name_t as varchar(128)
     CHECK ( value ~ '^[[:alpha:]''-]+$');
 -- NOTE: I have tested using [:alpha:]   and suprisingly it worked for characters from various languages;
--- including cyrillic, hebrew, arabic, kanji etc. yes numbers of some math symbols or emoji didn't
+-- including cyrillic, hebrew, arabic, kanji etc. yet numbers or some math symbols or emoji didn't
 -- I'm not sure how much it depends on stuff like locale/fonts/OS
 -- [:lower:] follows the same logic
 
@@ -58,7 +58,6 @@ CREATE TABLE faculties (
     faculty_id SERIAL PRIMARY KEY,
     name ext_name_t NOT NULL UNIQUE,
     dean_worker_id INTEGER UNIQUE NULL
-    -- TODO: add check if dean belongs to the faculty
 );
 
 CREATE TABLE majors (
@@ -66,8 +65,10 @@ CREATE TABLE majors (
     name ext_name_t NOT NULL UNIQUE,
     code VARCHAR(8) NOT NULL UNIQUE
         CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}$'),
-    faculty_id INTEGER NOT NULL REFERENCES faculties(faculty_id) ON DELETE RESTRICT
+    faculty_id INTEGER NOT NULL REFERENCES faculties(faculty_id) ON DELETE RESTRICT ON UPDATE CASCADE
 );
+
+CREATE INDEX idx_fk_majors_faculty ON majors(faculty_id);
 
 
 CREATE TABLE courses (
@@ -76,10 +77,11 @@ CREATE TABLE courses (
         CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}$'),
         -- This will be extended major code
     title ext_name_t NOT NULL,
-    major_id INTEGER NOT NULL REFERENCES majors(major_id) ON DELETE CASCADE,
+    major_id INTEGER NOT NULL REFERENCES majors(major_id) ON DELETE CASCADE ON UPDATE CASCADE,
     ects_credits SMALLINT NOT NULL DEFAULT 1 
 );
 
+CREATE INDEX idx_fk_courses_major ON courses(major_id);
 
 CREATE TABLE workers (
     worker_id SERIAL PRIMARY KEY,
@@ -88,9 +90,11 @@ CREATE TABLE workers (
     telephone telephone_t UNIQUE NULL,
     email email_t UNIQUE NULL,
     sex sex_t NULL,
-    faculty_id INTEGER NULL REFERENCES faculties(faculty_id) ON DELETE SET NULL,
+    faculty_id INTEGER NULL REFERENCES faculties(faculty_id) ON DELETE SET NULL ON UPDATE CASCADE,
     teaching BOOLEAN NOT NULL DEFAULT FALSE
 );
+
+CREATE INDEX idx_fk_workers_faculty ON workers(faculty_id);
 
 
 
@@ -105,8 +109,8 @@ CREATE TABLE students (
 
 CREATE TABLE groups (
     group_id SERIAL PRIMARY KEY,
-    course_id INTEGER NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
-    instructor_worker_id INTEGER NOT NULL REFERENCES workers(worker_id) ON DELETE SET NULL,
+    course_id INTEGER NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    instructor_worker_id INTEGER NOT NULL REFERENCES workers(worker_id) ON DELETE SET NULL ON UPDATE CASCADE,
     code VARCHAR(32) NOT NULL UNIQUE
         CHECK (code ~ '^[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}-[[:upper:]]{3}-[0-9]{3}$'),
         -- I assume that it will be extended course code
@@ -120,34 +124,38 @@ CREATE TABLE groups (
 );
 
 -- adding this index because it may make some triggers faster
-CREATE INDEX idx_groups_dates ON groups(start_date, end_date, day_of_week);
+CREATE INDEX idx_groups_dates ON groups(day_of_week, start_date, end_date);
 CREATE INDEX idx_groups_lookup ON groups(group_id);
 
 -- many-to-many
 CREATE TABLE students_to_majors(
-    student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
-    major_id INTEGER NOT NULL REFERENCES majors(major_id) ON DELETE CASCADE,
+    student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    major_id INTEGER NOT NULL REFERENCES majors(major_id) ON DELETE CASCADE ON UPDATE CASCADE,
     semester INTEGER NOT NULL CHECK (semester >= 1),
     PRIMARY KEY (student_id, major_id)
 );
 
+CREATE INDEX idx_fk_stm_major ON students_to_majors(major_id);
+
 -- many-to-many
 CREATE TABLE students_to_groups(
-    student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
-    group_id INTEGER NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE,
+    student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    group_id INTEGER NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (student_id, group_id)
 );
 -- adding this index because it also may make some triggers faster
-CREATE INDEX idx_students_to_groups_student_id ON students_to_groups(student_id);
+CREATE INDEX idx_students_to_groups_student_id ON students_to_groups(student_id, group_id);
 
 CREATE TABLE marks (
     mark_id SERIAL PRIMARY KEY,
-    student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE,
-    course_id INTEGER NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE,
+    student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE ON UPDATE CASCADE,
+    course_id INTEGER NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE,
     mark SMALLINT NOT NULL CHECK (mark >= 1 AND mark <= 5),
     weight SMALLINT DEFAULT 1 CHECK (weight > 0),
     added DATE DEFAULT now() CHECK (added <= now())
 );
+
+CREATE INDEX idx_fk_marks_student ON marks(student_id);
 
 
 --------------- FUNCTIONS & TRIGGERS ----------------
@@ -186,6 +194,7 @@ FOR EACH ROW
 EXECUTE FUNCTION trg_group_assignment();
 
 
+
 -- check for instructors group assignment overlap
 -- also change teaching to true or false if needed
 CREATE OR REPLACE FUNCTION trg_instructor_overlap()
@@ -210,6 +219,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- update instructor to teaching if assigned to group
 CREATE OR REPLACE FUNCTION trg_instructor_teaching()
 RETURNS TRIGGER AS $$
 BEGIN
@@ -323,6 +333,51 @@ FOR EACH ROW
 EXECUTE FUNCTION check_course_belonging();
 
 
+CREATE OR REPLACE FUNCTION capitalize_name()
+RETURNS TRIGGER AS $$
+BEGIN
+    NEW.first_name := INITCAP(NEW.first_name);
+    NEW.last_name  := INITCAP(NEW.last_name);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE TRIGGER trg_capitalize_students
+BEFORE INSERT OR UPDATE ON students
+FOR EACH ROW EXECUTE FUNCTION capitalize_name();
+
+CREATE TRIGGER trg_capitalize_workers
+BEFORE INSERT OR UPDATE ON workers
+FOR EACH ROW EXECUTE FUNCTION capitalize_name();
+
+
+CREATE OR REPLACE FUNCTION enroll_student_in_major(
+    p_student_email email_t, 
+    p_major_code VARCHAR, 
+    p_semester INTEGER
+)
+RETURNS VOID AS $$
+DECLARE
+    v_student_id INTEGER;
+    v_major_id INTEGER;
+BEGIN
+    SELECT student_id INTO v_student_id FROM students WHERE email = lower(p_student_email);
+    SELECT major_id INTO v_major_id FROM majors WHERE code = p_major_code;
+
+    IF v_student_id IS NULL OR v_major_id IS NULL THEN
+        RAISE EXCEPTION 'Student or Major not found';
+    END IF;
+
+    INSERT INTO students_to_majors (student_id, major_id, semester)
+    VALUES (v_student_id, v_major_id, p_semester)
+    -- if there already exists such assignment we only update semester
+    ON CONFLICT (student_id, major_id) 
+    DO UPDATE SET semester = p_semester;
+    
+END;
+$$ LANGUAGE plpgsql;
+
+
 CREATE OR REPLACE FUNCTION student_schedule (p_student_id INT)
 RETURNS TABLE(
     time_slot VARCHAR(128),
@@ -367,7 +422,7 @@ $$ LANGUAGE sql STABLE;
 
 CREATE OR REPLACE /* MATERIALIZED */ VIEW students_gpa AS
 SELECT std.student_id AS "student_id", std.first_name || ' ' || std.last_name AS "student_name", maj.name AS "major", 
-ROUND((SUM(mar.mark * mar.weight) * 1.0) / SUM(mar.weight),2) AS "srednia"
+ROUND((SUM(mar.mark * mar.weight) * 1.0) / SUM(mar.weight),2) AS "GPA"
 FROM students std 
 JOIN students_to_groups stg ON std.student_id = stg.student_id
 JOIN groups g ON stg.group_id = g.group_id
@@ -390,6 +445,7 @@ ORDER BY f.faculty_id, m.major_id, c.course_id;
 CREATE OR REPLACE VIEW worker_overview AS
 SELECT
     w.worker_id AS "worker_id", w.first_name || ' ' || w.last_name AS "worker",
+    f.name AS "faculty",
     COUNT(DISTINCT g.group_id) AS "total_groups",
     ROUND(SUM(
         (EXTRACT(EPOCH FROM (g.end_time - g.start_time)) / 3600.0)
@@ -397,7 +453,8 @@ SELECT
     ), 2) AS "total_semester_hours"
 FROM workers w
 LEFT JOIN groups g ON w.worker_id = g.instructor_worker_id
-GROUP BY w.worker_id, w.first_name, w.last_name;
+LEFT JOIN faculties f on f.faculty_id = w.faculty_id
+GROUP BY w.worker_id, w.first_name, w.last_name, f.name;
 
 CREATE OR REPLACE VIEW student_overview AS
 SELECT
@@ -431,27 +488,33 @@ LEFT JOIN (
 ) mdata ON mdata.student_id = s.student_id;
 
 
+CREATE OR REPLACE VIEW failling_students AS
+SELECT 
+    s.student_id,
+    s.first_name,
+    s.last_name,
+    c.title as course_title,
+    m.mark
+FROM marks m
+JOIN students s USING (student_id)
+JOIN courses c USING (course_id)
+WHERE m.mark < 3
+ORDER BY m.added DESC;
 
+
+--------------- ROLES ----------------
+
+CREATE ROLE university_admin;
+CREATE ROLE instructor;      
+CREATE ROLE student;    
+
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO university_admin;
+
+GRANT SELECT ON students, groups, courses, majors TO instructor;
+GRANT INSERT, UPDATE, SELECT ON marks TO instructor;
+REVOKE DELETE ON students FROM instructor;
+
+GRANT SELECT ON courses, majors, groups TO student;
+GRANT SELECT (first_name, last_name, email, faculty_id) ON workers TO student;
 
 COMMIT;
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

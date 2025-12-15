@@ -37,22 +37,17 @@ ECTS_DISTRIBUTION =(
 
 DOUBLE_MAJOR_CHANCE = 0.15
 TRIPLE_MAJOR_CHANCE = 0.01
-QUAD_MAJOR_CHANCE = 0.001
 
 EMAIL_DOMAIN = "agh.edu.pl"
 USED_DAYS = [1, 2, 3, 4, 5]
 START_DATES = [ 
     datetime(2025, 10, 1),
     datetime(2025, 11, 1),
-    datetime(2026,  3, 1),
-    datetime(2026,  4, 1),
 ]
 
 END_DATES = [   
     datetime(2026,  1, 31),
     datetime(2026,  2, 28),
-    datetime(2026,  5, 31),
-    datetime(2026,  6, 30) 
 ]
 
 # Class that stores generation of some unique values like emails and phone numbers
@@ -563,9 +558,8 @@ class DatabaseGenerator:
 
         double_major_count = int(DOUBLE_MAJOR_CHANCE * self.num_students)
         triple_major_count = int(TRIPLE_MAJOR_CHANCE * self.num_students)
-        quad_major_count = int(QUAD_MAJOR_CHANCE * self.num_students)
 
-        print(f"Adding {double_major_count} double-major and {triple_major_count} triple-major and {quad_major_count} quad-major students")
+        print(f"Adding {double_major_count} double-major and {triple_major_count} triple-major students")
 
 
         cohort_list = list(self.cohort_groups.values())
@@ -579,12 +573,6 @@ class DatabaseGenerator:
         # add triple-major students
         for _ in range(triple_major_count):
             groups = self._find_non_conflicting_cohorts(3, cohort_list)
-            if groups:
-                self._assign_multi_major_student(groups, students_to_majors, students_to_groups)
-
-        # add quadruple-major students
-        for _ in range(triple_major_count):
-            groups = self._find_non_conflicting_cohorts(4, cohort_list)
             if groups:
                 self._assign_multi_major_student(groups, students_to_majors, students_to_groups)
 
@@ -694,7 +682,7 @@ class DatabaseGenerator:
                         "mark_id": mark_id,
                         "student_id": student_id,
                         "course_id": course_id,
-                        "mark": random.randint(2, 5),
+                        "mark": random.choices([2.0, 3.0, 3.5, 4.0, 4.5, 5.0], [0.10, 0.30, 0.20, 0.20, 0.15, 0.05]),
                         "weight": random.randint(1, 4),
                         "added": start_date + timedelta(days=random.randint(0, days_range))
                     })
