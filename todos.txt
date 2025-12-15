@@ -1,0 +1,11 @@
+Here are some ideas on what can be added here:
+
+- birth_dates for workers/students
+- addresses for workers/students
+- student status ('graduated', 'active' 'suspended')
+- position for workers ('professor', 'assistant', 'non-scientifict worker' etc.)
+- employment data such as hire_date or idk.
+- type ('lecture', 'lab' etc.) of course ( this is technically already contained within the code but it could be made into a seperate field)
+- description of the course like in syllabues
+- buildings and classrooms + add some check for non-overlapping buildings and rooms add maybe another table for rooms and buildings and to what faculty it belongs and is it a lecture hall or a lab and maybe that it contains some special equipment
+- add attendtace table to track when student were present in a given group`
