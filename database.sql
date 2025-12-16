@@ -90,6 +90,7 @@ CREATE TABLE workers (
     telephone telephone_t UNIQUE NULL,
     email email_t UNIQUE NULL,
     sex sex_t NULL,
+    birth_date DATE NULL,
     faculty_id INTEGER NULL REFERENCES faculties(faculty_id) ON DELETE SET NULL ON UPDATE CASCADE,
     teaching BOOLEAN NOT NULL DEFAULT FALSE
 );
@@ -104,6 +105,7 @@ CREATE TABLE students (
     last_name name_t NOT NULL,
     telephone telephone_t UNIQUE NULL,
     email email_t NULL UNIQUE,
+    birth_date DATE NULL,
     sex sex_t NULL
 );
 
@@ -150,7 +152,7 @@ CREATE TABLE marks (
     mark_id SERIAL PRIMARY KEY,
     student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE ON UPDATE CASCADE,
     course_id INTEGER NOT NULL REFERENCES courses(course_id) ON DELETE CASCADE ON UPDATE CASCADE,
-    mark SMALLINT NOT NULL CHECK (mark >= 1 AND mark <= 5),
+    mark NUMERIC NOT NULL CHECK (mark IN (2.0, 3.0, 3.5, 4.0, 4.5, 5.0)),
     weight SMALLINT DEFAULT 1 CHECK (weight > 0),
     added DATE DEFAULT now() CHECK (added <= now())
 );
@@ -503,6 +505,9 @@ ORDER BY m.added DESC;
 
 
 --------------- ROLES ----------------
+DROP ROLE IF EXISTS university_admin;
+DROP ROLE IF EXISTS instructor;      
+DROP ROLE IF EXISTS student;    
 
 CREATE ROLE university_admin;
 CREATE ROLE instructor;      

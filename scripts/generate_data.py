@@ -50,6 +50,20 @@ END_DATES = [
     datetime(2026,  2, 28),
 ]
 
+WORKER_AGE_RANGES = (
+    [(25, 29), (30, 34), (35, 39), (40, 44), (45, 49), (50, 54), (55, 59), (60, 64), (65, 69), (70, 74), (75, 79), (80, 84), (85, 89), (90, 94), (95, 99)],
+    [0.05, 0.15,0.15,0.15,0.15,0.15 ,0.05, 0.05,0.03, 0.02, 0.01, 0.01, 0.01, 0.01, 0.01]
+)
+STUDENT_AGES = (
+    [20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30],
+    [0.21, 0.16, 0.16, 0.11, 0.11, 0.06, 0.06, 0.05, 0.05, 0.02, 0.01]
+)
+
+MARKS_DISTRIBUTION = (
+    [2.0, 3.0, 3.5, 4.0, 4.5, 5.0], 
+    [0.10, 0.30, 0.20, 0.15, 0.15, 0.10]
+)
+
 # Class that stores generation of some unique values like emails and phone numbers
 # @dataclass is used to automatically create some useful methods like __init__
 @dataclass
@@ -216,6 +230,16 @@ class DatabaseGenerator:
             'email': self.unique_gen.generate_email(first_name, last_name)
         }
 
+    @staticmethod
+    def generate_birthdate_for_age(age: int) -> date:
+        today = date.today()
+
+        start = today - timedelta(days=(age + 1) * 365)
+        end = today - timedelta(days=age * 365)
+
+        random_days = random.randint(0, (end - start).days)
+        return start + timedelta(days=random_days)
+
     def create_faculties(self) -> List[Dict]:
         faculties = []
         # first ID is 1
@@ -312,6 +336,7 @@ class DatabaseGenerator:
             if random.random() < NULL_WORKER_FACULTY_CHANCE:
                 faculty_id = None
 
+            
             worker = {
                 "worker_id": worker_id,
                 # include all the person data
@@ -319,6 +344,7 @@ class DatabaseGenerator:
                 "faculty_id": faculty_id,
                 # be default none are teaching
                 "teaching": False,
+                "birth_date": DatabaseGenerator.generate_birthdate_for_age(random.randrange(*random.choices(*WORKER_AGE_RANGES)[0]))
             }
 
             workers.append(worker)
@@ -648,15 +674,15 @@ class DatabaseGenerator:
 
         self.num_students += 1 
 
-    # students don
     def create_students(self) -> List[Dict]:
-        return [
-            {
+        out = []
+        for i in range(self.num_students - 1):
+            out.append({
                 "student_id": i + 1, 
-                **self.generate_person()
-            }
-            for i in range(self.num_students - 1)
-        ]
+                **self.generate_person(),
+                "birth_date": DatabaseGenerator.generate_birthdate_for_age(random.choices(*STUDENT_AGES)[0])
+            })
+        return out
 
     def create_marks(self) -> List[Dict]:
         """Generate marks for students."""
@@ -682,7 +708,7 @@ class DatabaseGenerator:
                         "mark_id": mark_id,
                         "student_id": student_id,
                         "course_id": course_id,
-                        "mark": random.choices([2.0, 3.0, 3.5, 4.0, 4.5, 5.0], [0.10, 0.30, 0.20, 0.20, 0.15, 0.05]),
+                        "mark": random.choices(*MARKS_DISTRIBUTION)[0],
                         "weight": random.randint(1, 4),
                         "added": start_date + timedelta(days=random.randint(0, days_range))
                     })
