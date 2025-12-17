@@ -413,11 +413,47 @@ AS $$
     ) s
     ON t.day_of_week = s.day_of_week
     AND t.start_time = s.start_time
-
-GROUP BY t.start_time, t.end_time
+    GROUP BY t.start_time, t.end_time
     ORDER BY t.start_time;
 $$ LANGUAGE sql STABLE;
 
+CREATE OR REPLACE FUNCTION instructor_schedule (p_instructor_id INT)
+RETURNS TABLE(
+    time_slot VARCHAR(128),
+    monday VARCHAR(128),
+    tuesday VARCHAR(128),
+    wednesday VARCHAR(128),
+    thursday VARCHAR(128),
+    friday VARCHAR(128)
+)
+AS $$
+    SELECT 
+        t.start_time || ' - ' || t.end_time AS time_slot,
+        MAX(CASE WHEN s.day_of_week = 1 THEN s.title || ' (' || substring(s.code,17,1) || ')'  END) AS monday,
+        MAX(CASE WHEN s.day_of_week = 2 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS tuesday,
+        MAX(CASE WHEN s.day_of_week = 3 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS wednesday,
+        MAX(CASE WHEN s.day_of_week = 4 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS thursday,
+        MAX(CASE WHEN s.day_of_week = 5 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS friday
+
+    FROM (
+        SELECT DISTINCT day_of_week, start_time, end_time
+        FROM groups
+    ) t
+    LEFT JOIN (
+        SELECT day_of_week, start_time, end_time, title, groups.code as code
+        FROM workers
+        JOIN groups ON groups.instructor_worker_id = workers.worker_id 
+        JOIN students_to_groups USING(group_id)
+        JOIN courses USING(course_id)
+        WHERE worker_id = p_instructor_id
+        AND now() BETWEEN start_date AND end_date
+    ) s
+    ON t.day_of_week = s.day_of_week
+    AND t.start_time = s.start_time
+GROUP BY t.start_time, t.end_time
+    ORDER BY t.start_time;
+
+$$ LANGUAGE sql STABLE;
 
 --------------- VIEWS ----------------
 
@@ -501,13 +537,15 @@ FROM marks m
 JOIN students s USING (student_id)
 JOIN courses c USING (course_id)
 WHERE m.mark < 3
-ORDER BY m.added DESC;
+ORDER BY student_id;
 
 
 --------------- ROLES ----------------
-DROP ROLE IF EXISTS university_admin;
-DROP ROLE IF EXISTS instructor;      
-DROP ROLE IF EXISTS student;    
+
+
+DROP ROLE university_admin;
+DROP ROLE instructor;
+DROP ROLE student;
 
 CREATE ROLE university_admin;
 CREATE ROLE instructor;      

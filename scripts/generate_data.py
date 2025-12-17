@@ -61,7 +61,7 @@ STUDENT_AGES = (
 
 MARKS_DISTRIBUTION = (
     [2.0, 3.0, 3.5, 4.0, 4.5, 5.0], 
-    [0.10, 0.30, 0.20, 0.15, 0.15, 0.10]
+    [0.05, 0.35, 0.20, 0.15, 0.15, 0.10]
 )
 
 # Class that stores generation of some unique values like emails and phone numbers
@@ -703,7 +703,7 @@ class DatabaseGenerator:
                 days_range = (end_date - start_date).days
 
                 # just a random number of marks
-                for _ in range(random.randint(0, 4)):
+                for _ in range(random.randint(0, 3)):
                     marks.append({
                         "mark_id": mark_id,
                         "student_id": student_id,

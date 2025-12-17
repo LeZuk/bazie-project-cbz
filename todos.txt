@@ -1,6 +1,6 @@
 Here are some ideas on what can be added here:
 
-- birth_dates for workers/students
+- birth_dates for workers/students (DONE)
 - addresses for workers/students
 - student status ('graduated', 'active' 'suspended')
 - position for workers ('professor', 'assistant', 'non-scientifict worker' etc.)
