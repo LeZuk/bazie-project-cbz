@@ -35,7 +35,7 @@ CREATE DOMAIN telephone_t as varchar(32)
 
 
 CREATE DOMAIN sex_t as varchar(1)
-    CHECK ( value IN ('M', 'F', 'O', 'm', 'f', 'o') );
+    CHECK ( LOWER(VALUE) IN ('m', 'f', 'o') );
 
 
 -- common type used for things likes names and surnames
@@ -46,7 +46,7 @@ CREATE DOMAIN name_t as varchar(128)
 -- I'm not sure how much it depends on stuff like locale/fonts/OS
 -- [:lower:] follows the same logic
 
--- as above but also allows for more other characters including whitespaces and numbers and some special characters
+-- as above but also allows for more other characters including whitespaces, numbers and some special characters
 CREATE DOMAIN ext_name_t as varchar(128)
     CHECK ( value ~ '^[[:alpha:]\s:0-9''./-]+$');
 
@@ -134,7 +134,8 @@ CREATE TABLE students_to_majors(
     student_id INTEGER NOT NULL REFERENCES students(student_id) ON DELETE CASCADE ON UPDATE CASCADE,
     major_id INTEGER NOT NULL REFERENCES majors(major_id) ON DELETE CASCADE ON UPDATE CASCADE,
     semester INTEGER NOT NULL CHECK (semester >= 1),
-    PRIMARY KEY (student_id, major_id)
+    PRIMARY KEY (student_id, major_id)  -- what if we're approaching the next semester?
+                                        -- (student_id, major_id) stay the same
 );
 
 CREATE INDEX idx_fk_stm_major ON students_to_majors(major_id);
@@ -145,6 +146,7 @@ CREATE TABLE students_to_groups(
     group_id INTEGER NOT NULL REFERENCES groups(group_id) ON DELETE CASCADE ON UPDATE CASCADE,
     PRIMARY KEY (student_id, group_id)
 );
+
 -- adding this index because it also may make some triggers faster
 CREATE INDEX idx_students_to_groups_student_id ON students_to_groups(student_id, group_id);
 
@@ -277,7 +279,7 @@ BEGIN
     IF cleaned LIKE '+%' THEN
         RETURN NEW;
     END IF;
-    NEW.telephone := '+48' || cleaned;
+    NEW.telephone := '+48' || cleaned; -- not sure whether every student has to be +48
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -297,7 +299,7 @@ EXECUTE FUNCTION normalize_phone();
 CREATE OR REPLACE FUNCTION convert_sex_to_lower()
 RETURNS trigger AS $$
 BEGIN
-    NEW.sex := lower(NEW.sex);
+    NEW.sex := LOWER(NEW.sex);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -392,7 +394,7 @@ RETURNS TABLE(
 AS $$
     SELECT 
         t.start_time || ' - ' || t.end_time AS time_slot,
-        MAX(CASE WHEN s.day_of_week = 1 THEN s.title || ' (' || substring(s.code,17,1) || ')'  END) AS monday,
+        MAX(CASE WHEN s.day_of_week = 1 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS monday,
         MAX(CASE WHEN s.day_of_week = 2 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS tuesday,
         MAX(CASE WHEN s.day_of_week = 3 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS wednesday,
         MAX(CASE WHEN s.day_of_week = 4 THEN s.title || ' (' || substring(s.code,17,1) || ')' END) AS thursday,
@@ -543,9 +545,9 @@ ORDER BY student_id;
 --------------- ROLES ----------------
 
 
-DROP ROLE university_admin;
-DROP ROLE instructor;
-DROP ROLE student;
+DROP ROLE IF EXISTS university_admin;
+DROP ROLE IF EXISTS instructor;
+DROP ROLE IF EXISTS student;
 
 CREATE ROLE university_admin;
 CREATE ROLE instructor;      
