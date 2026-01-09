@@ -61,14 +61,6 @@ Beyond the core schema, the database includes logic that simplifies administrati
 *   Smart Enrollment - The `enroll_student_in_major` function provides an abstraction layer for student registration. It allows administrators to use natural keys (Student Email and Major Code) rather than internal IDs. The function utilizes `ON CONFLICT` logic to automatically differentiate between a new enrollment and a semester update for an existing student.
 *   Hierarchical Coding - Strict formatting is enforced on identification codes to mirror the database structure. Major codes (`XXX-000`) serve as prefixes for Course codes, which in turn prefix Group codes (`XXX-000-XXX-000-XXX-000`),### 9. Current Limitations
 
-*   **Bulk Performance:** The row-by-row execution of overlap triggers (`trg_group_assignment`) creates significant overhead during large-scale data imports.
-*   **Hardcoded Localization:** The `normalize_phone` function defaults to the Polish country code (+48), complicating the management of international student data.
-*   **Historical Data:** The primary key structure of `students_to_majors` forces the overwriting of semester data during updates, preventing the storage of historical enrollment records.
-*   **Scheduling Constraints:** The `working_hours` check rigidly enforces an 08:00–20:00 window, and the data model assumes a weekly recurring schedule, limiting support for irregular events.
-
-### 10. Summary
-
-This database implementation provides a robust foundation for university administration by prioritizing data integrity over flexibility. Through the extensive use of Domain types, Regex constraints, and PL/pgSQL triggers, the system successfully automates error prevention for critical tasks like scheduling and grading. While the current design involves certain trade-offs regarding performance and historical tracking, it effectively meets the core requirements of standardizing academic records and preventing logistical conflicts. providing consistency.
 *   Time Limits - The `working_hours` constraint strictly limits class scheduling to the 08:00 to 20:00 window, rejecting any group assignments that fall outside of standard university operating hours.
 
 
